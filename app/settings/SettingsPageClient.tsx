@@ -39,8 +39,7 @@ export default function SettingsPageClient({
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            window.history.replaceState({}, '', '/settings');
-            router.refresh();
+            window.location.href = '/settings';
           }
         })
         .catch(console.error)
