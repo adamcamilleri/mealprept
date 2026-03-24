@@ -18,7 +18,6 @@ export default function ChipGrid({
       onToggle(value);
       return;
     }
-    // For multi-select with "none" option
     if (value === 'none') {
       onToggle('none');
       return;
@@ -27,7 +26,7 @@ export default function ChipGrid({
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
       {options.map((option) => {
         const isSelected = selected.includes(option.value);
         return (
@@ -35,25 +34,38 @@ export default function ChipGrid({
             key={option.value}
             onClick={() => handleClick(option.value)}
             className={`
-              relative p-4 rounded-xl border-2 text-left transition-all duration-200
-              min-h-[60px] flex items-center gap-3
+              group relative p-3.5 rounded-xl border text-left
+              transition-all duration-200 ease-out
+              min-h-[56px] flex items-center gap-2.5
+              active:scale-[0.97]
               ${
                 isSelected
-                  ? 'border-coral-400 bg-coral-50 shadow-sm'
-                  : 'border-warmgray-200 bg-white hover:border-warmgray-300'
+                  ? 'border-coral-400 bg-coral-50/80 shadow-[0_0_0_1px_theme(colors.coral.400)]'
+                  : 'border-warmgray-200/80 bg-white hover:border-warmgray-300 hover:shadow-sm'
               }
             `}
           >
             {option.emoji && (
-              <span className="text-2xl flex-shrink-0">{option.emoji}</span>
+              <span className={`text-xl flex-shrink-0 transition-transform duration-200 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}>
+                {option.emoji}
+              </span>
             )}
             <span
-              className={`text-sm font-medium ${
+              className={`text-sm font-medium leading-snug ${
                 isSelected ? 'text-coral-700' : 'text-warmgray-700'
               }`}
             >
               {option.label}
             </span>
+
+            {/* Selection indicator */}
+            {isSelected && (
+              <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-coral-500 flex items-center justify-center">
+                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+            )}
           </button>
         );
       })}

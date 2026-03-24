@@ -51,29 +51,35 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" id="auth-modal">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" id="auth-modal">
+      <div
+        className="absolute inset-0 bg-warmgray-900/30 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative bg-white rounded-2xl p-7 sm:p-8 max-w-md w-full shadow-xl animate-fadeInScale">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-warmgray-400 hover:text-warmgray-600 text-xl"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-warmgray-300 hover:text-warmgray-500 hover:bg-warmgray-100 transition-colors"
         >
-          ×
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
 
-        <h2 className="text-2xl font-semibold text-warmgray-800 mb-2">
-          {mode === 'signup' ? 'Sign up to see your plan' : 'Welcome back'}
+        <h2 className="text-xl font-semibold text-warmgray-800 mb-1">
+          {mode === 'signup' ? 'Create your account' : 'Welcome back'}
         </h2>
-        <p className="text-warmgray-500 mb-6">
+        <p className="text-warmgray-400 text-sm mb-6">
           {mode === 'signup'
-            ? 'Create a free account to generate your meal prep plan.'
+            ? 'Save your plans and track your fridge.'
             : 'Sign in to continue.'}
         </p>
 
         <button
           onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-3 p-3 rounded-xl border-2 border-warmgray-200 hover:border-warmgray-300 mb-4 text-warmgray-700 font-medium"
+          className="w-full flex items-center justify-center gap-2.5 p-2.5 rounded-xl border border-warmgray-200 hover:border-warmgray-300 hover:bg-warmgray-50 text-warmgray-700 text-sm font-medium transition-all duration-200"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
               fill="#4285F4"
@@ -94,25 +100,25 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
           Continue with Google
         </button>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-warmgray-200" />
-          <span className="text-warmgray-400 text-sm">or</span>
-          <div className="flex-1 h-px bg-warmgray-200" />
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-warmgray-100" />
+          <span className="text-warmgray-300 text-xs">or</span>
+          <div className="flex-1 h-px bg-warmgray-100" />
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4">
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 rounded-xl border-2 border-warmgray-200 focus:border-coral-400 focus:outline-none text-warmgray-800"
+            className="w-full p-2.5 rounded-xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
             required
           />
           <input
@@ -120,22 +126,22 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 rounded-xl border-2 border-warmgray-200 focus:border-coral-400 focus:outline-none text-warmgray-800"
+            className="w-full p-2.5 rounded-xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
             required
             minLength={6}
           />
-          <Button type="submit" loading={loading} className="w-full" size="lg">
+          <Button type="submit" loading={loading} className="w-full" size="md">
             {mode === 'signup' ? 'Create account' : 'Sign in'}
           </Button>
         </form>
 
-        <p className="text-center text-sm text-warmgray-500 mt-4">
+        <p className="text-center text-xs text-warmgray-400 mt-5">
           {mode === 'signup' ? (
             <>
               Already have an account?{' '}
               <button
                 onClick={() => setMode('signin')}
-                className="text-coral-600 font-medium"
+                className="text-coral-500 font-medium hover:text-coral-600 transition-colors"
               >
                 Sign in
               </button>
@@ -145,7 +151,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
               Don&apos;t have an account?{' '}
               <button
                 onClick={() => setMode('signup')}
-                className="text-coral-600 font-medium"
+                className="text-coral-500 font-medium hover:text-coral-600 transition-colors"
               >
                 Sign up
               </button>

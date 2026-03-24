@@ -16,7 +16,7 @@ export default function PlanPageClient({
 }: PlanPageClientProps) {
   return (
     <div className="px-4 py-8">
-      <PlanView plan={plan} profile={profile} isPro={isPro} />
+      <PlanView plan={plan} profile={profile} isPro={isPro} isAuthenticated={true} />
     </div>
   );
 }

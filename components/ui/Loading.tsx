@@ -17,19 +17,41 @@ export default function Loading() {
   useEffect(() => {
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % messages.length);
-    }, 2000);
+    }, 2500);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-warmgray-200 rounded-full" />
-        <div className="w-16 h-16 border-4 border-coral-500 rounded-full border-t-transparent animate-spin absolute top-0 left-0" />
+    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-8">
+      {/* Animated dots */}
+      <div className="flex items-center gap-2">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="w-2.5 h-2.5 rounded-full bg-coral-400"
+            style={{
+              animation: `pulse 1.4s ease-in-out ${i * 0.16}s infinite`,
+            }}
+          />
+        ))}
       </div>
-      <p className="text-warmgray-600 text-lg font-medium animate-pulse">
+
+      <p className="text-warmgray-500 text-base font-medium transition-opacity duration-300">
         {messages[messageIndex]}
       </p>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 80%, 100% {
+            opacity: 0.2;
+            transform: scale(0.8);
+          }
+          40% {
+            opacity: 1;
+            transform: scale(1.1);
+          }
+        }
+      `}</style>
     </div>
   );
 }

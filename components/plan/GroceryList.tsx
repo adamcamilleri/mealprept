@@ -10,6 +10,7 @@ const FRIDGE_STORAGE_KEY = 'spoonfed-fridge';
 
 interface GroceryListProps {
   groceryList: GroceryCategory[];
+  isAuthenticated?: boolean;
 }
 
 function loadFridgeItems(): FridgeItem[] {
@@ -54,13 +55,14 @@ interface GroceryItemForModal {
   storage: StorageLocation;
 }
 
-export default function GroceryList({ groceryList }: GroceryListProps) {
+export default function GroceryList({ groceryList, isAuthenticated = false }: GroceryListProps) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [fridgeMatches, setFridgeMatches] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [modalItems, setModalItems] = useState<GroceryItemForModal[]>([]);
   const [modalChecked, setModalChecked] = useState<Set<string>>(new Set());
   const [showSuccess, setShowSuccess] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const items = loadFridgeItems();
@@ -97,7 +99,7 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
     });
   };
 
-  const copyList = () => {
+  const copyList = async () => {
     const text = groceryList
       .map(
         (cat) =>
@@ -105,8 +107,21 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
       )
       .join('\n\n');
 
-    navigator.clipboard.writeText(text);
-    alert('Grocery list copied!');
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const openAddToFridgeModal = () => {
@@ -200,20 +215,20 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-warmgray-200 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-warmgray-800">
+      <div className="bg-white rounded-2xl border border-warmgray-200/80 p-5 sm:p-6">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-xs font-semibold text-warmgray-400 uppercase tracking-wider">
             Grocery List
           </h2>
           <Button variant="secondary" size="sm" onClick={copyList}>
-            Copy list
+            {copied ? 'Copied!' : 'Copy list'}
           </Button>
         </div>
 
         <div className="space-y-6">
           {groceryList.map((category) => (
             <div key={category.category}>
-              <h3 className="text-sm font-semibold text-coral-600 uppercase tracking-wide mb-3">
+              <h3 className="text-xs font-semibold text-coral-500 uppercase tracking-wider mb-2.5">
                 {category.category}
               </h3>
               <ul className="space-y-2">
@@ -268,7 +283,17 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
 
         {/* Add to Fridge banner */}
         <div className="mt-6 pt-6 border-t border-warmgray-100">
-          {showSuccess ? (
+          {!isAuthenticated ? (
+            <Link
+              href="/?signin=true"
+              className="w-full bg-warmgray-50 hover:bg-warmgray-100 border border-warmgray-200 rounded-xl p-4 flex items-center justify-center gap-2 transition-colors block"
+            >
+              <span className="text-lg">🧊</span>
+              <span className="text-sm font-semibold text-warmgray-600">
+                Sign in to track your fridge & pantry
+              </span>
+            </Link>
+          ) : showSuccess ? (
             <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

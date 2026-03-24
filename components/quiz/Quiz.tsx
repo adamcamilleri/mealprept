@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TasteProfile } from '@/lib/types';
 import ChipGrid from './ChipGrid';
@@ -8,6 +8,10 @@ import QuizStep from './QuizStep';
 import TextInputStep from './TextInputStep';
 import Button from '../ui/Button';
 import Loading from '../ui/Loading';
+import UpgradePrompt from '../ui/UpgradePrompt';
+import AuthModal from './AuthModal';
+
+const HAS_GENERATED_KEY = 'spoonfed-has-generated';
 
 const CUISINES = [
   { label: 'Mexican', emoji: '🌮', value: 'Mexican' },
@@ -91,6 +95,8 @@ export default function Quiz() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [showGate, setShowGate] = useState<'upgrade' | 'signin' | null>(null);
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
     proteins: [],
@@ -103,6 +109,40 @@ export default function Quiz() {
     servings: 2,
   });
 
+  // Check if user has already generated a plan and whether they can generate again
+  useEffect(() => {
+    const checkAccess = async () => {
+      const hasGenerated = localStorage.getItem(HAS_GENERATED_KEY);
+
+      if (!hasGenerated) {
+        // First time — always allowed
+        setCheckingAccess(false);
+        return;
+      }
+
+      // Has generated before — check if Pro
+      try {
+        const res = await fetch('/api/check-subscription');
+        const data = await res.json();
+
+        if (!data.authenticated) {
+          // Not signed in and already used free plan — need to sign in + upgrade
+          setShowGate('signin');
+        } else if (!data.isPro) {
+          // Signed in but not Pro — need to upgrade
+          setShowGate('upgrade');
+        }
+        // Pro users can always re-take
+      } catch {
+        // If check fails, let them through
+      }
+
+      setCheckingAccess(false);
+    };
+
+    checkAccess();
+  }, []);
+
   const updateProfile = (key: keyof TasteProfile, value: unknown) => {
     setProfile((prev) => ({ ...prev, [key]: value }));
   };
@@ -114,7 +154,6 @@ export default function Quiz() {
     }
     setProfile((prev) => {
       const arr = prev[key] as string[];
-      // If selecting a real item, remove "none"
       const filtered = arr.filter((v) => v !== 'none');
       if (filtered.includes(value)) {
         return { ...prev, [key]: filtered.filter((v) => v !== value) };
@@ -130,15 +169,15 @@ export default function Quiz() {
       case 1:
         return profile.proteins.length > 0;
       case 2:
-        return true; // meal styles — optional
+        return true;
       case 3:
-        return true; // favorite dishes — optional
+        return true;
       case 4:
         return !!profile.effortLevel;
       case 5:
-        return true; // least favorites — optional
+        return true;
       case 6:
-        return true; // hard nos — optional
+        return true;
       case 7:
         return profile.prepDays > 0;
       case 8:
@@ -151,7 +190,6 @@ export default function Quiz() {
   const handleGenerate = async () => {
     setLoading(true);
     try {
-      // Generate plan
       const res = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,7 +203,10 @@ export default function Quiz() {
 
       const plan = await res.json();
 
-      // Store plan in sessionStorage for viewing without auth
+      // Mark that user has generated a plan
+      localStorage.setItem(HAS_GENERATED_KEY, 'true');
+
+      // Store plan in sessionStorage for viewing
       sessionStorage.setItem('generatedPlan', JSON.stringify(plan));
       sessionStorage.setItem('tasteProfile', JSON.stringify(profile));
 
@@ -200,12 +241,65 @@ export default function Quiz() {
     }
   };
 
+  if (checkingAccess) {
+    return null;
+  }
+
+  // Gate: needs to sign in first, then upgrade
+  if (showGate === 'signin') {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="bg-white rounded-2xl border border-warmgray-200 p-8 text-center">
+          <div className="text-4xl mb-4">🍽️</div>
+          <h3 className="text-xl font-semibold text-warmgray-800 mb-2">
+            Want another plan?
+          </h3>
+          <p className="text-warmgray-500 mb-6">
+            You&apos;ve already used your free plan. Sign in and upgrade to Pro to generate unlimited meal plans.
+          </p>
+          <AuthModal
+            onClose={() => setShowGate(null)}
+            onSuccess={() => {
+              // After sign-in, re-check if they're Pro
+              fetch('/api/check-subscription')
+                .then((r) => r.json())
+                .then((data) => {
+                  if (data.isPro) {
+                    setShowGate(null);
+                  } else {
+                    setShowGate('upgrade');
+                  }
+                });
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Gate: signed in but needs Pro
+  if (showGate === 'upgrade') {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="text-center mb-4">
+          <div className="text-4xl mb-4">🍽️</div>
+          <h3 className="text-xl font-semibold text-warmgray-800 mb-2">
+            Loved your first plan?
+          </h3>
+          <p className="text-warmgray-500">
+            Upgrade to Pro to generate unlimited meal plans, swap recipes, and more.
+          </p>
+        </div>
+        <UpgradePrompt feature="Generating additional plans" />
+      </div>
+    );
+  }
+
   if (loading) {
     return <Loading />;
   }
 
   const steps = [
-    // Step 0: Cuisines
     <QuizStep key={0} title="What cuisines do you love?" subtitle="Pick at least 1">
       <ChipGrid
         options={CUISINES}
@@ -213,7 +307,6 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('cuisines', v)}
       />
     </QuizStep>,
-    // Step 1: Proteins
     <QuizStep key={1} title="Pick your go-to proteins" subtitle="Pick at least 1">
       <ChipGrid
         options={PROTEINS}
@@ -221,7 +314,6 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('proteins', v)}
       />
     </QuizStep>,
-    // Step 2: Meal styles
     <QuizStep key={2} title="What meal styles do you prefer?" subtitle="Pick your favorites - we'll build about half your plan around these">
       <ChipGrid
         options={MEAL_STYLES}
@@ -229,7 +321,6 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('mealStyles', v)}
       />
     </QuizStep>,
-    // Step 3: Favorite dishes
     <QuizStep key={3} title="Any favorite dishes or foods you love?" subtitle="We'll include similar flavors in your plan">
       <TextInputStep
         value={profile.favoriteDishes || ''}
@@ -239,7 +330,6 @@ export default function Quiz() {
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
-    // Step 4: Effort level
     <QuizStep key={4} title="How much cooking effort this week?">
       <ChipGrid
         options={EFFORT_LEVELS}
@@ -248,7 +338,6 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    // Step 5: Least favorite foods
     <QuizStep key={5} title="Any foods you're just not a fan of?" subtitle="We'll steer clear of these">
       <TextInputStep
         value={profile.leastFavorites || ''}
@@ -258,7 +347,6 @@ export default function Quiz() {
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
-    // Step 6: Hard nos / allergies
     <QuizStep key={6} title="Any ingredients you hate?" subtitle="Optional — skip if you eat everything">
       <ChipGrid
         options={HARD_NOS}
@@ -266,7 +354,6 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('hardNos', v)}
       />
     </QuizStep>,
-    // Step 7: Prep days
     <QuizStep key={7} title="How many days of meal prep?">
       <ChipGrid
         options={PREP_DAYS}
@@ -275,7 +362,6 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    // Step 8: Servings (final)
     <QuizStep key={8} title="Servings per meal?">
       <ChipGrid
         options={SERVINGS}
@@ -323,7 +409,6 @@ export default function Quiz() {
           </Button>
         </div>
       </div>
-
     </>
   );
 }

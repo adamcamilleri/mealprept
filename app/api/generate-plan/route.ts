@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePlan } from '@/lib/groq';
 import { TasteProfile } from '@/lib/types';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +21,30 @@ export async function POST(req: NextRequest) {
       body.hardNos = body.hardNos.filter((v) => v !== 'none');
     }
 
+    // Generate the plan
     const plan = await generatePlan(body);
+
+    // Track usage if user is authenticated (for analytics)
+    try {
+      const supabase = createServerSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const serviceClient = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        await serviceClient.from('usage').insert({
+          user_id: user.id,
+          action: 'generate_plan',
+        });
+      }
+    } catch {
+      // Don't fail plan generation if usage tracking fails
+    }
+
     return NextResponse.json(plan);
   } catch (error) {
     console.error('Plan generation error:', error);
