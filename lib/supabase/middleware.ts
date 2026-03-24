@@ -33,7 +33,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes — /plan/preview is public (uses sessionStorage, no auth needed)
+  // Protected routes - /plan/preview is public (uses sessionStorage, no auth needed)
   const pathname = request.nextUrl.pathname;
   const publicPaths = ['/plan/preview'];
   const protectedPaths = ['/plan', '/plans', '/fridge', '/settings'];

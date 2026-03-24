@@ -39,7 +39,7 @@ const PROTEINS = [
 ];
 
 const EFFORT_LEVELS = [
-  { label: '15 min max — keep it stupid simple', emoji: '⚡', value: 'quick' },
+  { label: '15 min max, keep it stupid simple', emoji: '⚡', value: 'quick' },
   { label: '30 min is fine', emoji: '🍳', value: 'medium' },
   { label: "I'll spend an hour if it's worth it", emoji: '👨‍🍳', value: 'involved' },
   { label: 'Slow cooker / set and forget', emoji: '🫕', value: 'slowcooker' },
@@ -56,7 +56,7 @@ const HARD_NOS = [
   { label: 'Nuts', value: 'Nuts' },
   { label: 'Bell peppers', value: 'Bell peppers' },
   { label: 'Onions', value: 'Onions' },
-  { label: 'None — I eat everything', emoji: '✅', value: 'none' },
+  { label: 'None, I eat everything', emoji: '✅', value: 'none' },
 ];
 
 // Meal styles mapped to the cuisines they naturally belong to.
@@ -155,14 +155,14 @@ export default function Quiz() {
   };
 
   const handleGenerate = async () => {
-    // Check if this is a second+ generation — gate behind Pro
+    // Check if this is a second+ generation - gate behind Pro
     const hasGenerated = localStorage.getItem(HAS_GENERATED_KEY);
     if (hasGenerated) {
       try {
         const res = await fetch('/api/check-subscription');
         const data = await res.json();
         if (!data.isPro) {
-          // Not Pro — show upgrade prompt
+          // Not Pro - show upgrade prompt
           setShowUpgradeGate(true);
           return;
         }
@@ -225,7 +225,7 @@ export default function Quiz() {
     }
   };
 
-  // Upgrade gate — shown at the generate step, not on page load
+  // Upgrade gate - shown at the generate step, not on page load
   if (showUpgradeGate) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
@@ -288,7 +288,7 @@ export default function Quiz() {
         value={profile.favoriteDishes || ''}
         onChange={(v) => updateProfile('favoriteDishes', v)}
         placeholder="e.g. butter chicken, pad thai, burrito bowls, carbonara..."
-        skipLabel="Skip — surprise me!"
+        skipLabel="Skip, surprise me!"
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
@@ -309,7 +309,7 @@ export default function Quiz() {
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
-    <QuizStep key={6} title="Any ingredients you hate?" subtitle="Optional — skip if you eat everything">
+    <QuizStep key={6} title="Any ingredients you hate?" subtitle="Optional, skip if you eat everything">
       <ChipGrid
         options={HARD_NOS}
         selected={profile.hardNos.length === 0 ? [] : profile.hardNos}

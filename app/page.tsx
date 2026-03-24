@@ -36,7 +36,7 @@ function HomeContent() {
       {/* Quiz */}
       <Quiz />
 
-      {/* Auth modal — triggered by ?signin=true redirect */}
+      {/* Auth modal - triggered by ?signin=true redirect */}
       {showAuth && (
         <AuthModal
           onClose={() => {

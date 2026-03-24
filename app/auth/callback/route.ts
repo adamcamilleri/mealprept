@@ -10,12 +10,12 @@ export async function GET(request: Request) {
     const supabase = createServerSupabaseClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Successful auth — redirect to intended destination
+      // Successful auth - redirect to intended destination
       return NextResponse.redirect(`${origin}${next}`);
     }
     console.error('Auth callback error:', error.message);
   }
 
-  // Auth failed — redirect home with error
+  // Auth failed - redirect home with error
   return NextResponse.redirect(`${origin}/?error=auth`);
 }
