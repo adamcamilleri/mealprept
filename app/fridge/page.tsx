@@ -82,6 +82,9 @@ export default function FridgePage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [mounted, setMounted] = useState(false);
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [customShelfLife, setCustomShelfLife] = useState('7');
+  const [customCategory, setCustomCategory] = useState<FridgeItem['category']>('other');
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -146,6 +149,25 @@ export default function FridgePage() {
     },
     [quantity]
   );
+
+  const addCustomItem = () => {
+    if (!inputValue.trim()) return;
+    const newItem: FridgeItem = {
+      id: generateId(),
+      name: inputValue.trim(),
+      category: customCategory,
+      addedDate: new Date().toISOString(),
+      shelfLifeDays: parseInt(customShelfLife) || 7,
+      quantity: quantity.trim() || undefined,
+    };
+    setItems((prev) => [newItem, ...prev]);
+    setInputValue('');
+    setQuantity('');
+    setCustomShelfLife('7');
+    setCustomCategory('other');
+    setShowCustomForm(false);
+    inputRef.current?.focus();
+  };
 
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
@@ -305,10 +327,64 @@ export default function FridgePage() {
               Add
             </Button>
           </div>
-          {inputValue.trim() && !getShelfLife(inputValue) && (
-            <p className="text-xs text-warmgray-400 mt-2 px-1">
-              Not in our database - will default to 7 days shelf life
-            </p>
+          {inputValue.trim() && !getShelfLife(inputValue) && !showCustomForm && (
+            <div className="flex items-center justify-between mt-2 px-1">
+              <p className="text-xs text-warmgray-400">
+                Not in our database - will default to 7 days shelf life
+              </p>
+              <button
+                onClick={() => setShowCustomForm(true)}
+                className="text-xs text-coral-600 hover:text-coral-700 font-medium ml-2 flex-shrink-0"
+              >
+                Customize
+              </button>
+            </div>
+          )}
+
+          {showCustomForm && (
+            <div className="mt-3 bg-warmgray-50 rounded-xl p-4 space-y-3">
+              <p className="text-sm font-medium text-warmgray-700">
+                Custom item: <span className="text-coral-600">{inputValue}</span>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                  <label className="text-xs text-warmgray-500 mb-1 block">Category</label>
+                  <select
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value as FridgeItem['category'])}
+                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-coral-400"
+                  >
+                    <option value="produce">🥬 Produce</option>
+                    <option value="protein">🥩 Protein</option>
+                    <option value="dairy">🧀 Dairy</option>
+                    <option value="pantry">🫙 Pantry</option>
+                    <option value="other">📦 Other</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-warmgray-500 mb-1 block">Shelf life (days)</label>
+                  <input
+                    type="number"
+                    value={customShelfLife}
+                    onChange={(e) => setCustomShelfLife(e.target.value)}
+                    min="1"
+                    max="365"
+                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-coral-400"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setShowCustomForm(false)}
+                  className="text-sm text-warmgray-500 hover:text-warmgray-700 px-3 py-1.5"
+                >
+                  Cancel
+                </button>
+                <Button size="sm" onClick={addCustomItem} disabled={!inputValue.trim()}>
+                  Add custom item
+                </Button>
+              </div>
+            </div>
           )}
         </div>
 
