@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Spoonfed — Dinner, figured out.';
+export const alt = 'NoChef — Dinner, figured out.';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -42,7 +42,7 @@ export default function Image() {
               fontWeight: 700,
             }}
           >
-            S
+            N
           </div>
           <span
             style={{
@@ -51,7 +51,7 @@ export default function Image() {
               color: '#4d4945',
             }}
           >
-            Spoonfed
+            NoChef
           </span>
         </div>
         <div

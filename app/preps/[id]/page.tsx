@@ -22,7 +22,7 @@ export default function PrepDetailPage() {
   useEffect(() => {
     setMounted(true);
     try {
-      const raw = localStorage.getItem('spoonfed-plans');
+      const raw = localStorage.getItem('nochef-plans');
       if (!raw) {
         router.push('/preps');
         return;

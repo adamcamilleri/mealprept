@@ -13,7 +13,7 @@ import {
 import Button from '@/components/ui/Button';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 
-const STORAGE_KEY = 'spoonfed-fridge';
+const STORAGE_KEY = 'nochef-fridge';
 const FREE_ITEM_LIMIT = 40;
 
 function generateId(): string {

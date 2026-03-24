@@ -6,7 +6,7 @@ import { FridgeItem, getShelfLife, StorageLocation } from '@/lib/fridge-data';
 import Link from 'next/link';
 import Button from '../ui/Button';
 
-const FRIDGE_STORAGE_KEY = 'spoonfed-fridge';
+const FRIDGE_STORAGE_KEY = 'nochef-fridge';
 
 interface GroceryListProps {
   groceryList: GroceryCategory[];

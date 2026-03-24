@@ -1,12 +1,12 @@
-# CLAUDE.md — Full Product Spec for Spoonfed
+# CLAUDE.md — Full Product Spec for NoChef
 
 ---
 
 ## WHAT TO BUILD
 
-Build a complete, production-ready micro-SaaS web app called **Spoonfed**.
+Build a complete, production-ready micro-SaaS web app called **NoChef**.
 
-Spoonfed is a weekly meal planner that starts with what your family actually enjoys eating — not calories or macros. Users take a short visual taste quiz, and the app generates a weekly meal plan with recipes they'll genuinely look forward to, plus a combined grocery list.
+NoChef is a weekly meal planner that starts with what your family actually enjoys eating — not calories or macros. Users take a short visual taste quiz, and the app generates a weekly meal plan with recipes they'll genuinely look forward to, plus a combined grocery list.
 
 The tagline: "Dinner, figured out."
 
@@ -64,7 +64,7 @@ NEXT_PUBLIC_APP_URL=
 
 ### The Quiz (this IS the landing page)
 
-The landing page should have a brief hero section (2-3 lines max explaining what Spoonfed does), then immediately flow into the quiz. The quiz IS the product demo — people should be able to take it without signing up.
+The landing page should have a brief hero section (2-3 lines max explaining what NoChef does), then immediately flow into the quiz. The quiz IS the product demo — people should be able to take it without signing up.
 
 **Quiz steps (6 steps, one at a time, progress bar at top):**
 
@@ -505,7 +505,7 @@ export interface MealPlan {
 ## FILE STRUCTURE
 
 ```
-mealprept/
+nochef/
 ├── app/
 │   ├── layout.tsx
 │   ├── page.tsx            # Landing + Quiz
@@ -565,10 +565,10 @@ mealprept/
 
 ```typescript
 export const metadata: Metadata = {
-  title: 'Spoonfed — Dinner, figured out.',
+  title: 'NoChef — Dinner, figured out.',
   description: 'Tell us what your family loves eating and we\'ll plan the week so you don\'t have to think about it. Recipes you\'ll actually look forward to, plus a combined grocery list.',
   openGraph: {
-    title: 'Spoonfed — Dinner, figured out.',
+    title: 'NoChef — Dinner, figured out.',
     description: 'Weekly meal plans built around what your family actually enjoys eating. No stress, no guesswork, just good food on the table.',
     type: 'website',
   },

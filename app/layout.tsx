@@ -11,11 +11,11 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  title: "Spoonfed — Dinner, figured out.",
+  title: "NoChef — Dinner, figured out.",
   description:
     "Tell us what your family loves eating and we'll plan the week so you don't have to think about it. Recipes you'll actually look forward to, plus a combined grocery list.",
   openGraph: {
-    title: "Spoonfed — Dinner, figured out.",
+    title: "NoChef — Dinner, figured out.",
     description:
       "Weekly meal plans built around what your family actually enjoys eating. No stress, no guesswork, just good food on the table.",
     type: 'website',

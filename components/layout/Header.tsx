@@ -53,7 +53,7 @@ export default function Header() {
           href="/"
           className="text-lg font-bold text-warmgray-800 tracking-tight transition-opacity hover:opacity-70"
         >
-          spoon<span className="text-coral-500">fed</span>
+          no<span className="text-coral-500">chef</span>
         </Link>
 
         <nav className="flex items-center gap-1">
