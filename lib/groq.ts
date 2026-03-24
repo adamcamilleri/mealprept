@@ -31,7 +31,20 @@ CRITICAL RULES:
 
 8. The prep day order should be genuinely useful — tell them what to start first, what to do in parallel, and how to be efficient.
 
-9. Generate the combined grocery list yourself with merged quantities. If two recipes use garlic, list "Garlic (1 head)" not two separate garlic entries. Group by category: Produce, Protein, Dairy/Eggs, Pantry Staples, Spices/Sauces.
+9. Generate the combined grocery list yourself with merged quantities. Group by category: Produce, Protein, Dairy/Eggs, Pantry Staples, Spices/Sauces.
+
+10. RECIPE MEASUREMENTS: Use grams for all ingredients where it makes sense. For example: "200g chicken breast", "150g rice", "30g soy sauce". For small amounts of spices, use teaspoons/tablespoons. For liquids like oil, use tablespoons. Always be precise with grams — no vague measurements.
+
+11. GROCERY LIST MEASUREMENTS: Use real-world shopping quantities, NOT cooking measurements. Think about what you'd actually buy at the store:
+   - "1 bunch cilantro" NOT "0.5 cups cilantro"
+   - "1 knob ginger" NOT "15g ginger"
+   - "2 onions" NOT "200g onion"
+   - "1 head garlic" NOT "6 cloves garlic"
+   - "500g chicken breast" NOT "2 breasts"
+   - "1 can black beans (400g)" NOT "200g black beans"
+   - "1 bag rice (500g)" NOT "300g rice"
+   - "1 lime" NOT "30ml lime juice"
+   - "1 bottle soy sauce" only if they might not have it — otherwise omit pantry staples people typically own
 
 CRITICAL JSON RULES:
 - Respond ONLY in valid JSON. No markdown, no backticks, no extra text.
@@ -52,8 +65,8 @@ JSON structure:
       "ingredients": [
         {
           "item": "string",
-          "amount": "number — USE DECIMALS like 0.5 not fractions like 1/2",
-          "unit": "string",
+          "amount": "number — weight in grams where possible, USE DECIMALS like 0.5 not fractions",
+          "unit": "string — use 'g' for grams, 'tbsp' for tablespoons, 'tsp' for teaspoons, 'ml' for liquids",
           "notes": "string — optional, e.g. diced, boneless skinless"
         }
       ],
@@ -67,7 +80,7 @@ JSON structure:
       "items": [
         {
           "item": "string",
-          "amount": "string — combined amount across all recipes",
+          "amount": "string — real-world shopping quantity like '1 bunch', '2 cans', '500g', '1 knob'",
           "usedIn": ["string — recipe names that use this ingredient"]
         }
       ]
