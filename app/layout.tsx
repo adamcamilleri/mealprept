@@ -10,13 +10,13 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "mealprept — Meal prep that doesn't suck",
+  title: "Spoonfed — Dinner, figured out.",
   description:
-    "Tell us what you actually love eating and we'll build you a weekly meal prep plan you'll look forward to. With a combined grocery list.",
+    "Tell us what your family loves eating and we'll plan the week so you don't have to think about it. Recipes you'll actually look forward to, plus a combined grocery list.",
   openGraph: {
-    title: "mealprept — Meal prep that doesn't suck",
+    title: "Spoonfed — Dinner, figured out.",
     description:
-      "Personalized meal prep plans based on what you actually enjoy eating. Not macros. Not diets. Just food you'll love.",
+      "Weekly meal plans built around what your family actually enjoys eating. No stress, no guesswork, just good food on the table.",
     type: 'website',
   },
 };

@@ -12,7 +12,7 @@ interface SavedPlan {
   createdAt: string;
 }
 
-const STORAGE_KEY = 'mealprept-plans';
+const STORAGE_KEY = 'spoonfed-plans';
 
 function loadPlans(): SavedPlan[] {
   if (typeof window === 'undefined') return [];

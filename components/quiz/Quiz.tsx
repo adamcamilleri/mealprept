@@ -171,14 +171,14 @@ export default function Quiz() {
 
       // Also save to localStorage for My Preps
       try {
-        const savedPlans = JSON.parse(localStorage.getItem('mealprept-plans') || '[]');
+        const savedPlans = JSON.parse(localStorage.getItem('spoonfed-plans') || '[]');
         savedPlans.unshift({
           id: Date.now(),
           plan,
           tasteProfile: profile,
           createdAt: new Date().toISOString(),
         });
-        localStorage.setItem('mealprept-plans', JSON.stringify(savedPlans));
+        localStorage.setItem('spoonfed-plans', JSON.stringify(savedPlans));
       } catch (e) {
         console.error('Failed to save plan to localStorage', e);
       }

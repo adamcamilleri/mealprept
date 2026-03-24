@@ -12,7 +12,7 @@ import {
 } from '@/lib/fridge-data';
 import Button from '@/components/ui/Button';
 
-const STORAGE_KEY = 'mealprept-fridge';
+const STORAGE_KEY = 'spoonfed-fridge';
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);

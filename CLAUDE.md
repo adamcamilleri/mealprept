@@ -1,14 +1,14 @@
-# CLAUDE.md — Full Product Spec for mealprept
+# CLAUDE.md — Full Product Spec for Spoonfed
 
 ---
 
 ## WHAT TO BUILD
 
-Build a complete, production-ready micro-SaaS web app called **mealprept**. 
+Build a complete, production-ready micro-SaaS web app called **Spoonfed**.
 
-mealprept is a meal prep planner that starts with what users actually enjoy eating — not calories or macros. Users take a short visual taste quiz, and the app generates a weekly meal prep plan with recipes they'll genuinely look forward to, plus a combined grocery list. 
+Spoonfed is a weekly meal planner that starts with what your family actually enjoys eating — not calories or macros. Users take a short visual taste quiz, and the app generates a weekly meal plan with recipes they'll genuinely look forward to, plus a combined grocery list.
 
-The tagline: "Meal prep that doesn't suck."
+The tagline: "Dinner, figured out."
 
 This needs to be shippable. Not a prototype, not a demo — a real product that real people can sign up for and pay for.
 
@@ -64,7 +64,7 @@ NEXT_PUBLIC_APP_URL=
 
 ### The Quiz (this IS the landing page)
 
-The landing page should have a brief hero section (2-3 lines max explaining what mealprept does), then immediately flow into the quiz. The quiz IS the product demo — people should be able to take it without signing up.
+The landing page should have a brief hero section (2-3 lines max explaining what Spoonfed does), then immediately flow into the quiz. The quiz IS the product demo — people should be able to take it without signing up.
 
 **Quiz steps (6 steps, one at a time, progress bar at top):**
 
@@ -565,11 +565,11 @@ mealprept/
 
 ```typescript
 export const metadata: Metadata = {
-  title: 'mealprept — Meal prep that doesn\'t suck',
-  description: 'Tell us what you actually love eating and we\'ll build you a weekly meal prep plan you\'ll look forward to. With a combined grocery list.',
+  title: 'Spoonfed — Dinner, figured out.',
+  description: 'Tell us what your family loves eating and we\'ll plan the week so you don\'t have to think about it. Recipes you\'ll actually look forward to, plus a combined grocery list.',
   openGraph: {
-    title: 'mealprept — Meal prep that doesn\'t suck',
-    description: 'Personalized meal prep plans based on what you actually enjoy eating. Not macros. Not diets. Just food you\'ll love.',
+    title: 'Spoonfed — Dinner, figured out.',
+    description: 'Weekly meal plans built around what your family actually enjoys eating. No stress, no guesswork, just good food on the table.',
     type: 'website',
   },
 };

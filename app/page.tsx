@@ -6,12 +6,12 @@ export default function Home() {
       {/* Hero */}
       <div className="text-center mb-12">
         <h1 className="text-4xl sm:text-5xl font-bold text-warmgray-800 mb-4">
-          Meal prep that doesn&apos;t suck.
+          What&apos;s for dinner? We got you.
         </h1>
         <p className="text-lg text-warmgray-500 max-w-xl mx-auto">
-          Tell us what you actually love eating. We&apos;ll build you a weekly
-          meal prep plan with recipes you&apos;ll look forward to, plus a
-          combined grocery list.
+          Tell us what your family loves eating. We&apos;ll plan the week
+          so you don&apos;t have to think about it — recipes you&apos;ll
+          actually look forward to, plus a combined grocery list.
         </p>
       </div>
 
