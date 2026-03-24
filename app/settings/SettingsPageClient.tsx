@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
@@ -20,9 +21,32 @@ export default function SettingsPageClient({
 }: SettingsPageClientProps) {
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [deleting, setDeleting] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
   const [managingPortal, setManagingPortal] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (sessionId && subscription?.plan_type !== 'pro') {
+      setVerifying(true);
+      fetch('/api/verify-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            window.history.replaceState({}, '', '/settings');
+            router.refresh();
+          }
+        })
+        .catch(console.error)
+        .finally(() => setVerifying(false));
+    }
+  }, [searchParams, subscription, router]);
 
   const handleUpgrade = async () => {
     setUpgrading(true);
@@ -100,7 +124,7 @@ export default function SettingsPageClient({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-warmgray-800 capitalize">
-                {subscription?.plan_type || 'Free'}
+                {verifying ? 'Verifying...' : (subscription?.plan_type || 'Free')}
               </p>
               <p className="text-xs text-warmgray-400 mt-0.5">
                 {subscription?.plan_type === 'pro'
