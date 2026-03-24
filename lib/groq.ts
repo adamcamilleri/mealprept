@@ -97,16 +97,28 @@ function buildUserPrompt(profile: TasteProfile): string {
     slowcooker: 'Slow cooker or set-and-forget style. Minimal active time.',
   };
 
-  return `Create a ${profile.prepDays}-day meal prep plan.
+  let prompt = `Create a ${profile.prepDays}-day meal prep plan.
 
 This person's taste profile:
 - Cuisines they love: ${profile.cuisines.join(', ')}
-- Preferred proteins: ${profile.proteins.join(', ')}
-- Cooking effort level: ${effortMap[profile.effortLevel]}
-- Ingredients to NEVER include: ${profile.hardNos.length > 0 ? profile.hardNos.join(', ') : 'No restrictions — they eat everything'}
+- Preferred proteins: ${profile.proteins.join(', ')}`;
+
+  if (profile.favoriteDishes) {
+    prompt += `\n- Favorite dishes/foods they want similar to: ${profile.favoriteDishes}`;
+  }
+
+  prompt += `\n- Cooking effort level: ${effortMap[profile.effortLevel]}`;
+
+  if (profile.leastFavorites) {
+    prompt += `\n- Foods they dislike (avoid these): ${profile.leastFavorites}`;
+  }
+
+  prompt += `\n- Ingredients to NEVER include: ${profile.hardNos.length > 0 ? profile.hardNos.join(', ') : 'No restrictions — they eat everything'}
 - Servings per recipe: ${profile.servings}
 
 Create exactly ${profile.prepDays} recipes. Every recipe should sound genuinely appetizing — like something they'd be excited to eat, not something they're forcing themselves through. Share overlapping ingredients across recipes to keep the grocery list short.`;
+
+  return prompt;
 }
 
 function fixJsonFractions(text: string): string {

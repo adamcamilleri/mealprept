@@ -3,7 +3,9 @@ export interface TasteProfile {
   userId?: string;
   cuisines: string[];
   proteins: string[];
+  favoriteDishes?: string;
   effortLevel: 'quick' | 'medium' | 'involved' | 'slowcooker';
+  leastFavorites?: string;
   hardNos: string[];
   prepDays: number;
   servings: number;

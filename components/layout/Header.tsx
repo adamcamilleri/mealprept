@@ -42,6 +42,12 @@ export default function Header() {
         </Link>
 
         <nav className="flex items-center gap-4">
+          <Link
+            href="/fridge"
+            className="text-warmgray-600 hover:text-warmgray-800 text-sm font-medium"
+          >
+            My Fridge
+          </Link>
           {user ? (
             <>
               <Link

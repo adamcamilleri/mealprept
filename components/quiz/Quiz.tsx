@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { TasteProfile } from '@/lib/types';
 import ChipGrid from './ChipGrid';
 import QuizStep from './QuizStep';
+import TextInputStep from './TextInputStep';
 import Button from '../ui/Button';
 import Loading from '../ui/Loading';
 
@@ -68,6 +69,8 @@ const SERVINGS = [
   { label: '4', value: '4' },
 ];
 
+const TOTAL_STEPS = 8;
+
 export default function Quiz() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -75,7 +78,9 @@ export default function Quiz() {
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
     proteins: [],
+    favoriteDishes: '',
     effortLevel: 'medium',
+    leastFavorites: '',
     hardNos: [],
     prepDays: 5,
     servings: 2,
@@ -108,12 +113,16 @@ export default function Quiz() {
       case 1:
         return profile.proteins.length > 0;
       case 2:
-        return !!profile.effortLevel;
+        return true; // favorite dishes — optional
       case 3:
-        return true; // optional
+        return !!profile.effortLevel;
       case 4:
-        return profile.prepDays > 0;
+        return true; // least favorites — optional
       case 5:
+        return true; // hard nos — optional
+      case 6:
+        return profile.prepDays > 0;
+      case 7:
         return profile.servings > 0;
       default:
         return false;
@@ -150,7 +159,7 @@ export default function Quiz() {
   };
 
   const handleNext = () => {
-    if (step === 5) {
+    if (step === TOTAL_STEPS - 1) {
       handleGenerate();
     } else {
       setStep((prev) => prev + 1);
@@ -162,6 +171,7 @@ export default function Quiz() {
   }
 
   const steps = [
+    // Step 0: Cuisines
     <QuizStep key={0} title="What cuisines do you love?" subtitle="Pick at least 1">
       <ChipGrid
         options={CUISINES}
@@ -169,6 +179,7 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('cuisines', v)}
       />
     </QuizStep>,
+    // Step 1: Proteins
     <QuizStep key={1} title="Pick your go-to proteins" subtitle="Pick at least 1">
       <ChipGrid
         options={PROTEINS}
@@ -176,7 +187,18 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('proteins', v)}
       />
     </QuizStep>,
-    <QuizStep key={2} title="How much cooking effort this week?">
+    // Step 2: Favorite dishes (NEW)
+    <QuizStep key={2} title="Any favorite dishes or foods you love?" subtitle="We'll include similar flavors in your plan">
+      <TextInputStep
+        value={profile.favoriteDishes || ''}
+        onChange={(v) => updateProfile('favoriteDishes', v)}
+        placeholder="e.g. butter chicken, pad thai, burrito bowls, carbonara..."
+        skipLabel="Skip — surprise me!"
+        onSkip={() => setStep((prev) => prev + 1)}
+      />
+    </QuizStep>,
+    // Step 3: Effort level
+    <QuizStep key={3} title="How much cooking effort this week?">
       <ChipGrid
         options={EFFORT_LEVELS}
         selected={[profile.effortLevel]}
@@ -184,14 +206,26 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    <QuizStep key={3} title="Any ingredients you hate?" subtitle="Optional — skip if you eat everything">
+    // Step 4: Least favorite foods (NEW)
+    <QuizStep key={4} title="Any foods you're just not a fan of?" subtitle="We'll steer clear of these">
+      <TextInputStep
+        value={profile.leastFavorites || ''}
+        onChange={(v) => updateProfile('leastFavorites', v)}
+        placeholder="e.g. eggplant, liver, tofu, cold soups..."
+        skipLabel="Nope, I like everything"
+        onSkip={() => setStep((prev) => prev + 1)}
+      />
+    </QuizStep>,
+    // Step 5: Hard nos / allergies
+    <QuizStep key={5} title="Any ingredients you hate?" subtitle="Optional — skip if you eat everything">
       <ChipGrid
         options={HARD_NOS}
         selected={profile.hardNos.length === 0 ? [] : profile.hardNos}
         onToggle={(v) => toggleArrayItem('hardNos', v)}
       />
     </QuizStep>,
-    <QuizStep key={4} title="How many days of meal prep?">
+    // Step 6: Prep days
+    <QuizStep key={6} title="How many days of meal prep?">
       <ChipGrid
         options={PREP_DAYS}
         selected={[String(profile.prepDays)]}
@@ -199,7 +233,8 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    <QuizStep key={5} title="Servings per meal?">
+    // Step 7: Servings (final)
+    <QuizStep key={7} title="Servings per meal?">
       <ChipGrid
         options={SERVINGS}
         selected={[String(profile.servings)]}
@@ -215,12 +250,12 @@ export default function Quiz() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-warmgray-400 mb-2">
-            <span>Step {step + 1} of 6</span>
+            <span>Step {step + 1} of {TOTAL_STEPS}</span>
           </div>
           <div className="w-full h-2 bg-warmgray-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-coral-500 rounded-full transition-all duration-500"
-              style={{ width: `${((step + 1) / 6) * 100}%` }}
+              style={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
             />
           </div>
         </div>
@@ -242,7 +277,7 @@ export default function Quiz() {
             disabled={!canProceed()}
             size="lg"
           >
-            {step === 5 ? 'Generate my plan ✨' : 'Next'}
+            {step === TOTAL_STEPS - 1 ? 'Generate my plan ✨' : 'Next'}
           </Button>
         </div>
       </div>
