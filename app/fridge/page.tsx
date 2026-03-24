@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   FridgeItem,
+  StorageLocation,
   SHELF_LIFE,
   getShelfLife,
   getDaysRemaining,
@@ -21,7 +22,16 @@ function loadItems(): FridgeItem[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as FridgeItem[];
+    // Migrate items that don't have a storage field
+    return parsed.map((item) => {
+      if (!item.storage) {
+        const shelfInfo = getShelfLife(item.name);
+        return { ...item, storage: shelfInfo?.storage ?? 'fridge' };
+      }
+      return item;
+    });
   } catch {
     return [];
   }
@@ -74,8 +84,26 @@ const CATEGORY_EMOJI: Record<string, string> = {
   other: '📦',
 };
 
+const TAB_CONFIG: Record<StorageLocation, { label: string; emoji: string; emptyEmoji: string; emptyTitle: string; emptyDesc: string }> = {
+  fridge: {
+    label: 'Fridge',
+    emoji: '🧊',
+    emptyEmoji: '🧊',
+    emptyTitle: 'Your fridge is empty',
+    emptyDesc: 'Add ingredients above and we\'ll track how fresh they are so nothing goes to waste.',
+  },
+  pantry: {
+    label: 'Pantry',
+    emoji: '🫙',
+    emptyEmoji: '🫙',
+    emptyTitle: 'Your pantry is empty',
+    emptyDesc: 'Add pantry staples like rice, pasta, oils, and spices to keep track of what you have.',
+  },
+};
+
 export default function FridgePage() {
   const [items, setItems] = useState<FridgeItem[]>([]);
+  const [activeTab, setActiveTab] = useState<StorageLocation>('fridge');
   const [inputValue, setInputValue] = useState('');
   const [quantity, setQuantity] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -85,6 +113,8 @@ export default function FridgePage() {
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customShelfLife, setCustomShelfLife] = useState('7');
   const [customCategory, setCustomCategory] = useState<FridgeItem['category']>('other');
+  const [customStorage, setCustomStorage] = useState<StorageLocation>('fridge');
+  const [addItemStorage, setAddItemStorage] = useState<StorageLocation | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -122,9 +152,13 @@ export default function FridgePage() {
       const results = searchShelfLife(value);
       setSuggestions(results);
       setShowSuggestions(results.length > 0);
+      // Auto-detect storage for the typed item
+      const shelfInfo = getShelfLife(value);
+      setAddItemStorage(shelfInfo?.storage ?? null);
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
+      setAddItemStorage(null);
     }
   };
 
@@ -132,6 +166,7 @@ export default function FridgePage() {
     (name: string) => {
       if (!name.trim()) return;
       const shelfInfo = getShelfLife(name);
+      const storage = addItemStorage ?? shelfInfo?.storage ?? activeTab;
       const newItem: FridgeItem = {
         id: generateId(),
         name: name.trim(),
@@ -139,15 +174,17 @@ export default function FridgePage() {
         addedDate: new Date().toISOString(),
         shelfLifeDays: shelfInfo?.days ?? 7,
         quantity: quantity.trim() || undefined,
+        storage,
       };
       setItems((prev) => [newItem, ...prev]);
       setInputValue('');
       setQuantity('');
       setSuggestions([]);
       setShowSuggestions(false);
+      setAddItemStorage(null);
       inputRef.current?.focus();
     },
-    [quantity]
+    [quantity, addItemStorage, activeTab]
   );
 
   const addCustomItem = () => {
@@ -159,13 +196,16 @@ export default function FridgePage() {
       addedDate: new Date().toISOString(),
       shelfLifeDays: parseInt(customShelfLife) || 7,
       quantity: quantity.trim() || undefined,
+      storage: customStorage,
     };
     setItems((prev) => [newItem, ...prev]);
     setInputValue('');
     setQuantity('');
     setCustomShelfLife('7');
     setCustomCategory('other');
+    setCustomStorage(activeTab);
     setShowCustomForm(false);
+    setAddItemStorage(null);
     inputRef.current?.focus();
   };
 
@@ -173,9 +213,20 @@ export default function FridgePage() {
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
 
+  const moveItem = (id: string) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, storage: item.storage === 'fridge' ? 'pantry' : 'fridge' }
+          : item
+      )
+    );
+  };
+
   const clearExpired = () => {
     setItems((prev) =>
       prev.filter((item) => {
+        if (item.storage !== activeTab) return true;
         const remaining = getDaysRemaining(item.addedDate, item.shelfLifeDays);
         return getFreshnessStatus(remaining) !== 'expired';
       })
@@ -210,8 +261,11 @@ export default function FridgePage() {
     }
   };
 
+  // Filter items by active tab
+  const tabItems = items.filter((item) => item.storage === activeTab);
+
   // Group items by freshness status
-  const groupedItems = items.reduce(
+  const groupedItems = tabItems.reduce(
     (acc, item) => {
       const remaining = getDaysRemaining(item.addedDate, item.shelfLifeDays);
       const status = getFreshnessStatus(remaining);
@@ -230,6 +284,9 @@ export default function FridgePage() {
   ];
 
   const hasExpired = (groupedItems['expired']?.length ?? 0) > 0;
+  const fridgeCount = items.filter((i) => i.storage === 'fridge').length;
+  const pantryCount = items.filter((i) => i.storage === 'pantry').length;
+  const tabConfig = TAB_CONFIG[activeTab];
 
   if (!mounted) {
     return (
@@ -249,13 +306,49 @@ export default function FridgePage() {
     <div className="min-h-screen bg-cream">
       <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-warmgray-800">
-            My Fridge
+            My Fridge & Pantry
           </h1>
           <p className="text-warmgray-500 mt-1 text-sm sm:text-base">
             Track what you have and know when to use it up.
           </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          {(['fridge', 'pantry'] as StorageLocation[]).map((tab) => {
+            const isActive = activeTab === tab;
+            const count = tab === 'fridge' ? fridgeCount : pantryCount;
+            const cfg = TAB_CONFIG[tab];
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`
+                  flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all
+                  ${
+                    isActive
+                      ? 'bg-coral-500 text-white shadow-sm'
+                      : 'bg-warmgray-100 text-warmgray-500 hover:bg-warmgray-200 hover:text-warmgray-700'
+                  }
+                `}
+              >
+                <span>{cfg.emoji}</span>
+                <span>{cfg.label}</span>
+                {count > 0 && (
+                  <span
+                    className={`
+                      ml-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold
+                      ${isActive ? 'bg-white/20 text-white' : 'bg-warmgray-200 text-warmgray-500'}
+                    `}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Add item form */}
@@ -295,8 +388,9 @@ export default function FridgePage() {
                           <span>{CATEGORY_EMOJI[info?.category ?? 'other']}</span>
                           <span className="capitalize">{s}</span>
                         </span>
-                        <span className="text-xs text-warmgray-400">
-                          ~{info?.days}d shelf life
+                        <span className="text-xs text-warmgray-400 flex items-center gap-1.5">
+                          <span>{info?.storage === 'pantry' ? '🫙' : '🧊'}</span>
+                          <span>~{info?.days}d</span>
                         </span>
                       </button>
                     );
@@ -327,13 +421,34 @@ export default function FridgePage() {
               Add
             </Button>
           </div>
+
+          {/* Storage toggle when a known item is typed */}
+          {inputValue.trim() && addItemStorage && !showCustomForm && (
+            <div className="flex items-center gap-2 mt-2 px-1">
+              <span className="text-xs text-warmgray-400">Store in:</span>
+              <button
+                onClick={() => setAddItemStorage(addItemStorage === 'fridge' ? 'pantry' : 'fridge')}
+                className="inline-flex items-center gap-1 text-xs font-medium text-coral-600 hover:text-coral-700 bg-coral-50 hover:bg-coral-100 px-2 py-1 rounded-full transition-colors"
+              >
+                <span>{addItemStorage === 'fridge' ? '🧊' : '🫙'}</span>
+                <span>{addItemStorage === 'fridge' ? 'Fridge' : 'Pantry'}</span>
+                <svg className="w-3 h-3 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           {inputValue.trim() && !getShelfLife(inputValue) && !showCustomForm && (
             <div className="flex items-center justify-between mt-2 px-1">
               <p className="text-xs text-warmgray-400">
                 Not in our database - will default to 7 days shelf life
               </p>
               <button
-                onClick={() => setShowCustomForm(true)}
+                onClick={() => {
+                  setShowCustomForm(true);
+                  setCustomStorage(activeTab);
+                }}
                 className="text-xs text-coral-600 hover:text-coral-700 font-medium ml-2 flex-shrink-0"
               >
                 Customize
@@ -371,6 +486,17 @@ export default function FridgePage() {
                     max="365"
                     className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-coral-400"
                   />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-warmgray-500 mb-1 block">Store in</label>
+                  <select
+                    value={customStorage}
+                    onChange={(e) => setCustomStorage(e.target.value as StorageLocation)}
+                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-coral-400"
+                  >
+                    <option value="fridge">🧊 Fridge</option>
+                    <option value="pantry">🫙 Pantry</option>
+                  </select>
                 </div>
               </div>
               <div className="flex gap-2 justify-end">
@@ -413,20 +539,19 @@ export default function FridgePage() {
         )}
 
         {/* Empty state */}
-        {items.length === 0 && (
+        {tabItems.length === 0 && (
           <div className="bg-white rounded-2xl border border-warmgray-200 p-8 sm:p-12 text-center">
-            <div className="text-4xl mb-4">🧊</div>
+            <div className="text-4xl mb-4">{tabConfig.emptyEmoji}</div>
             <h3 className="text-lg font-semibold text-warmgray-700 mb-2">
-              Your fridge is empty
+              {tabConfig.emptyTitle}
             </h3>
             <p className="text-warmgray-400 text-sm max-w-xs mx-auto">
-              Add ingredients above and we&apos;ll track how fresh they are so
-              nothing goes to waste.
+              {tabConfig.emptyDesc}
             </p>
           </div>
         )}
 
-        {/* Fridge items grouped by status */}
+        {/* Items grouped by status */}
         <div className="space-y-6">
           {statusOrder.map((status) => {
             const group = groupedItems[status];
@@ -456,6 +581,7 @@ export default function FridgePage() {
                       )
                     );
                     const isExpired = status === 'expired';
+                    const moveTarget = item.storage === 'fridge' ? 'pantry' : 'fridge';
 
                     return (
                       <div
@@ -509,6 +635,28 @@ export default function FridgePage() {
                           </div>
                         </div>
 
+                        {/* Move button */}
+                        <button
+                          onClick={() => moveItem(item.id)}
+                          className="flex-shrink-0 p-1.5 rounded-lg text-warmgray-300 hover:text-coral-500 hover:bg-coral-50 transition-colors"
+                          aria-label={`Move ${item.name} to ${moveTarget}`}
+                          title={`Move to ${moveTarget}`}
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                            />
+                          </svg>
+                        </button>
+
                         {/* Remove button */}
                         <button
                           onClick={() => removeItem(item.id)}
@@ -539,9 +687,9 @@ export default function FridgePage() {
         </div>
 
         {/* Summary footer */}
-        {items.length > 0 && (
+        {tabItems.length > 0 && (
           <div className="mt-8 text-center text-xs text-warmgray-400">
-            {items.length} item{items.length !== 1 ? 's' : ''} in your fridge
+            {tabItems.length} item{tabItems.length !== 1 ? 's' : ''} in your {activeTab}
           </div>
         )}
       </div>

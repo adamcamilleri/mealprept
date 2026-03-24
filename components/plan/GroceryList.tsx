@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { GroceryCategory } from '@/lib/types';
-import { FridgeItem, getShelfLife } from '@/lib/fridge-data';
+import { FridgeItem, getShelfLife, StorageLocation } from '@/lib/fridge-data';
 import Link from 'next/link';
 import Button from '../ui/Button';
 
@@ -16,7 +16,15 @@ function loadFridgeItems(): FridgeItem[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(FRIDGE_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as FridgeItem[];
+    return parsed.map((item) => {
+      if (!item.storage) {
+        const shelfInfo = getShelfLife(item.name);
+        return { ...item, storage: (shelfInfo?.storage ?? 'fridge') as StorageLocation };
+      }
+      return item;
+    });
   } catch {
     return [];
   }
@@ -43,6 +51,7 @@ interface GroceryItemForModal {
   amount: string;
   category: string;
   alreadyInFridge: boolean;
+  storage: StorageLocation;
 }
 
 export default function GroceryList({ groceryList }: GroceryListProps) {
@@ -108,11 +117,13 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
     for (const category of groceryList) {
       for (const item of category.items) {
         const alreadyInFridge = !!fuzzyMatchFridge(item.item, fridgeItems);
+        const shelfInfo = getShelfLife(item.item);
         const modalItem: GroceryItemForModal = {
           name: item.item,
           amount: item.amount,
           category: category.category,
           alreadyInFridge,
+          storage: shelfInfo?.storage ?? 'fridge',
         };
         items.push(modalItem);
         // Pre-check items NOT already in the fridge
@@ -157,6 +168,7 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
         addedDate: today,
         shelfLifeDays: shelfInfo?.days ?? 7,
         quantity: item.amount,
+        storage: item.storage,
       };
       newItems.push(newItem);
     }
@@ -263,14 +275,14 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 <span className="text-sm font-medium text-green-700">
-                  Items added to your fridge!
+                  Items added to your fridge & pantry!
                 </span>
               </div>
               <Link
                 href="/fridge"
                 className="text-sm font-semibold text-green-700 hover:text-green-800 underline underline-offset-2"
               >
-                View My Fridge
+                View Fridge & Pantry
               </Link>
             </div>
           ) : (
@@ -299,7 +311,7 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
             <div className="p-6 border-b border-warmgray-100">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-warmgray-800">
-                  Add to My Fridge
+                  Add to Fridge & Pantry
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
@@ -348,9 +360,13 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
                         <span className={`text-sm font-medium ${item.alreadyInFridge ? 'text-warmgray-400' : 'text-warmgray-700'}`}>
                           {item.amount} {item.name}
                         </span>
-                        {item.alreadyInFridge && (
+                        {item.alreadyInFridge ? (
                           <span className="ml-2 text-xs text-green-600 font-medium">
                             Already in fridge
+                          </span>
+                        ) : (
+                          <span className="ml-2 text-xs text-warmgray-400" title={item.storage === 'pantry' ? 'Goes to pantry' : 'Goes to fridge'}>
+                            {item.storage === 'pantry' ? '🫙' : '🧊'}
                           </span>
                         )}
                       </div>
@@ -369,7 +385,7 @@ export default function GroceryList({ groceryList }: GroceryListProps) {
                 Cancel
               </button>
               <Button onClick={handleAddToFridge} size="md">
-                Add {modalChecked.size} item{modalChecked.size !== 1 ? 's' : ''} to fridge
+                Add {modalChecked.size} item{modalChecked.size !== 1 ? 's' : ''}
               </Button>
             </div>
           </div>
