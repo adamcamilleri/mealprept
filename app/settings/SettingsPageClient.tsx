@@ -48,14 +48,20 @@ export default function SettingsPageClient({
         .finally(() => setVerifying(false));
     } else if (!sessionId && subscription?.stripe_subscription_id) {
       // No session_id - sync with Stripe to catch cancellations/changes
-      fetch('/api/sync-subscription', { method: 'POST' })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.plan !== subscription.plan_type) {
-            window.location.href = '/settings';
-          }
-        })
-        .catch(console.error);
+      // Only run once per page load
+      const synced = sessionStorage.getItem('sub_synced');
+      if (!synced) {
+        sessionStorage.setItem('sub_synced', '1');
+        fetch('/api/sync-subscription', { method: 'POST' })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.plan !== subscription.plan_type) {
+              sessionStorage.removeItem('sub_synced');
+              window.location.href = '/settings';
+            }
+          })
+          .catch(console.error);
+      }
     }
   }, [searchParams, subscription, router]);
 
