@@ -97,11 +97,17 @@ function buildUserPrompt(profile: TasteProfile): string {
     slowcooker: 'Slow cooker or set-and-forget style. Minimal active time.',
   };
 
+  const mealStyles = profile.mealStyles?.filter((s) => s !== 'none') || [];
+
   let prompt = `Create a ${profile.prepDays}-day meal prep plan.
 
 This person's taste profile:
 - Cuisines they love: ${profile.cuisines.join(', ')}
 - Preferred proteins: ${profile.proteins.join(', ')}`;
+
+  if (mealStyles.length > 0) {
+    prompt += `\n- Preferred meal styles: ${mealStyles.join(', ')}. IMPORTANT: About half of the recipes should follow these meal styles. The other half can be any format that fits the cuisines and proteins.`;
+  }
 
   if (profile.favoriteDishes) {
     prompt += `\n- Favorite dishes/foods they want similar to: ${profile.favoriteDishes}`;

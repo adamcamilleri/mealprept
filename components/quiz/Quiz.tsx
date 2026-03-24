@@ -56,6 +56,22 @@ const HARD_NOS = [
   { label: 'None — I eat everything', emoji: '✅', value: 'none' },
 ];
 
+const MEAL_STYLES = [
+  { label: 'Rice bowls', emoji: '🍚', value: 'Rice bowls' },
+  { label: 'Burrito / wraps', emoji: '🌯', value: 'Burritos/wraps' },
+  { label: 'Noodle bowls', emoji: '🍜', value: 'Noodle bowls' },
+  { label: 'Pasta dishes', emoji: '🍝', value: 'Pasta dishes' },
+  { label: 'Stir fry', emoji: '🥘', value: 'Stir fry' },
+  { label: 'Sheet pan meals', emoji: '🍳', value: 'Sheet pan meals' },
+  { label: 'Salad bowls', emoji: '🥗', value: 'Salad bowls' },
+  { label: 'Sandwiches', emoji: '🥪', value: 'Sandwiches' },
+  { label: 'Soups / stews', emoji: '🍲', value: 'Soups/stews' },
+  { label: 'Tacos', emoji: '🌮', value: 'Tacos' },
+  { label: 'Curry + rice', emoji: '🍛', value: 'Curry with rice' },
+  { label: 'One-pot meals', emoji: '🫕', value: 'One-pot meals' },
+  { label: 'No preference', emoji: '✨', value: 'none' },
+];
+
 const PREP_DAYS = [
   { label: '3 days', value: '3' },
   { label: '4 days', value: '4' },
@@ -69,7 +85,7 @@ const SERVINGS = [
   { label: '4', value: '4' },
 ];
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 export default function Quiz() {
   const router = useRouter();
@@ -81,6 +97,7 @@ export default function Quiz() {
     favoriteDishes: '',
     effortLevel: 'medium',
     leastFavorites: '',
+    mealStyles: [],
     hardNos: [],
     prepDays: 5,
     servings: 2,
@@ -90,9 +107,9 @@ export default function Quiz() {
     setProfile((prev) => ({ ...prev, [key]: value }));
   };
 
-  const toggleArrayItem = (key: 'cuisines' | 'proteins' | 'hardNos', value: string) => {
-    if (key === 'hardNos' && value === 'none') {
-      updateProfile('hardNos', ['none']);
+  const toggleArrayItem = (key: 'cuisines' | 'proteins' | 'hardNos' | 'mealStyles', value: string) => {
+    if ((key === 'hardNos' || key === 'mealStyles') && value === 'none') {
+      updateProfile(key, ['none']);
       return;
     }
     setProfile((prev) => {
@@ -113,16 +130,18 @@ export default function Quiz() {
       case 1:
         return profile.proteins.length > 0;
       case 2:
-        return true; // favorite dishes — optional
+        return true; // meal styles — optional
       case 3:
-        return !!profile.effortLevel;
+        return true; // favorite dishes — optional
       case 4:
-        return true; // least favorites — optional
+        return !!profile.effortLevel;
       case 5:
-        return true; // hard nos — optional
+        return true; // least favorites — optional
       case 6:
-        return profile.prepDays > 0;
+        return true; // hard nos — optional
       case 7:
+        return profile.prepDays > 0;
+      case 8:
         return profile.servings > 0;
       default:
         return false;
@@ -202,8 +221,16 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('proteins', v)}
       />
     </QuizStep>,
-    // Step 2: Favorite dishes (NEW)
-    <QuizStep key={2} title="Any favorite dishes or foods you love?" subtitle="We'll include similar flavors in your plan">
+    // Step 2: Meal styles
+    <QuizStep key={2} title="What meal styles do you prefer?" subtitle="Pick your favorites - we'll build about half your plan around these">
+      <ChipGrid
+        options={MEAL_STYLES}
+        selected={profile.mealStyles || []}
+        onToggle={(v) => toggleArrayItem('mealStyles', v)}
+      />
+    </QuizStep>,
+    // Step 3: Favorite dishes
+    <QuizStep key={3} title="Any favorite dishes or foods you love?" subtitle="We'll include similar flavors in your plan">
       <TextInputStep
         value={profile.favoriteDishes || ''}
         onChange={(v) => updateProfile('favoriteDishes', v)}
@@ -212,8 +239,8 @@ export default function Quiz() {
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
-    // Step 3: Effort level
-    <QuizStep key={3} title="How much cooking effort this week?">
+    // Step 4: Effort level
+    <QuizStep key={4} title="How much cooking effort this week?">
       <ChipGrid
         options={EFFORT_LEVELS}
         selected={[profile.effortLevel]}
@@ -221,8 +248,8 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    // Step 4: Least favorite foods (NEW)
-    <QuizStep key={4} title="Any foods you're just not a fan of?" subtitle="We'll steer clear of these">
+    // Step 5: Least favorite foods
+    <QuizStep key={5} title="Any foods you're just not a fan of?" subtitle="We'll steer clear of these">
       <TextInputStep
         value={profile.leastFavorites || ''}
         onChange={(v) => updateProfile('leastFavorites', v)}
@@ -231,16 +258,16 @@ export default function Quiz() {
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
-    // Step 5: Hard nos / allergies
-    <QuizStep key={5} title="Any ingredients you hate?" subtitle="Optional — skip if you eat everything">
+    // Step 6: Hard nos / allergies
+    <QuizStep key={6} title="Any ingredients you hate?" subtitle="Optional — skip if you eat everything">
       <ChipGrid
         options={HARD_NOS}
         selected={profile.hardNos.length === 0 ? [] : profile.hardNos}
         onToggle={(v) => toggleArrayItem('hardNos', v)}
       />
     </QuizStep>,
-    // Step 6: Prep days
-    <QuizStep key={6} title="How many days of meal prep?">
+    // Step 7: Prep days
+    <QuizStep key={7} title="How many days of meal prep?">
       <ChipGrid
         options={PREP_DAYS}
         selected={[String(profile.prepDays)]}
@@ -248,8 +275,8 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    // Step 7: Servings (final)
-    <QuizStep key={7} title="Servings per meal?">
+    // Step 8: Servings (final)
+    <QuizStep key={8} title="Servings per meal?">
       <ChipGrid
         options={SERVINGS}
         selected={[String(profile.servings)]}

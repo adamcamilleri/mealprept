@@ -6,6 +6,7 @@ export interface TasteProfile {
   favoriteDishes?: string;
   effortLevel: 'quick' | 'medium' | 'involved' | 'slowcooker';
   leastFavorites?: string;
+  mealStyles?: string[];
   hardNos: string[];
   prepDays: number;
   servings: number;
