@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "NoChef - Dinner, figured out.",
   description:
     "Tell us what your family loves eating and we'll plan the week so you don't have to think about it. Recipes you'll actually look forward to, plus a combined grocery list.",
+  manifest: '/manifest.json',
   openGraph: {
     title: "NoChef - Dinner, figured out.",
     description:

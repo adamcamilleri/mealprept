@@ -10,8 +10,6 @@ import Button from '../ui/Button';
 import Loading from '../ui/Loading';
 import UpgradePrompt from '../ui/UpgradePrompt';
 
-const HAS_GENERATED_KEY = 'nochef-has-generated';
-
 const CUISINES = [
   { label: 'Mexican', emoji: '🌮', value: 'Mexican' },
   { label: 'Korean', emoji: '🍜', value: 'Korean' },
@@ -98,6 +96,7 @@ export default function Quiz() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpgradeGate, setShowUpgradeGate] = useState(false);
+  const [upgradeMessage, setUpgradeMessage] = useState('');
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
     proteins: [],
@@ -155,22 +154,6 @@ export default function Quiz() {
   };
 
   const handleGenerate = async () => {
-    // Check if this is a second+ generation - gate behind Pro
-    const hasGenerated = localStorage.getItem(HAS_GENERATED_KEY);
-    if (hasGenerated) {
-      try {
-        const res = await fetch('/api/check-subscription');
-        const data = await res.json();
-        if (!data.isPro) {
-          // Not Pro - show upgrade prompt
-          setShowUpgradeGate(true);
-          return;
-        }
-      } catch {
-        // If check fails, let them through
-      }
-    }
-
     setLoading(true);
     setError(null);
     try {
@@ -182,13 +165,19 @@ export default function Quiz() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+
+        // Free tier limit hit - show upgrade prompt
+        if (res.status === 403 && err.error === 'free_limit_reached') {
+          setUpgradeMessage(err.message);
+          setShowUpgradeGate(true);
+          setLoading(false);
+          return;
+        }
+
         throw new Error(err.error || err.message || `Failed to generate plan (${res.status})`);
       }
 
       const plan = await res.json();
-
-      // Mark that user has generated a plan (only after success)
-      localStorage.setItem(HAS_GENERATED_KEY, 'true');
 
       // Store plan in sessionStorage for viewing
       sessionStorage.setItem('generatedPlan', JSON.stringify(plan));
@@ -225,20 +214,19 @@ export default function Quiz() {
     }
   };
 
-  // Upgrade gate - shown at the generate step, not on page load
   if (showUpgradeGate) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center mb-4">
           <div className="text-4xl mb-4">🍽️</div>
           <h3 className="text-xl font-semibold text-warmgray-800 mb-2">
-            Loved your first plan?
+            You&apos;re out of free plans
           </h3>
-          <p className="text-warmgray-500">
-            Upgrade to Pro to generate unlimited meal plans, swap recipes, and more.
+          <p className="text-warmgray-500 text-sm">
+            {upgradeMessage || 'Upgrade to Pro for unlimited meal plans, recipe swaps, and more.'}
           </p>
         </div>
-        <UpgradePrompt feature="Generating additional plans" />
+        <UpgradePrompt feature="Unlimited plan generation" />
         <div className="text-center">
           <button
             onClick={() => setShowUpgradeGate(false)}
