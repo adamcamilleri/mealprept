@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TasteProfile } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
 import ChipGrid from './ChipGrid';
 import QuizStep from './QuizStep';
 import Button from '../ui/Button';
 import Loading from '../ui/Loading';
-import AuthModal from './AuthModal';
 
 const CUISINES = [
   { label: 'Mexican', emoji: '🌮', value: 'Mexican' },
@@ -72,10 +70,8 @@ const SERVINGS = [
 
 export default function Quiz() {
   const router = useRouter();
-  const supabase = createClient();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
     proteins: [],
@@ -251,15 +247,6 @@ export default function Quiz() {
         </div>
       </div>
 
-      {showAuth && (
-        <AuthModal
-          onClose={() => setShowAuth(false)}
-          onSuccess={() => {
-            setShowAuth(false);
-            handleGenerate();
-          }}
-        />
-      )}
     </>
   );
 }
