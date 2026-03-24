@@ -59,20 +59,22 @@ const HARD_NOS = [
   { label: 'None — I eat everything', emoji: '✅', value: 'none' },
 ];
 
-const MEAL_STYLES = [
-  { label: 'Rice bowls', emoji: '🍚', value: 'Rice bowls' },
-  { label: 'Burrito / wraps', emoji: '🌯', value: 'Burritos/wraps' },
-  { label: 'Noodle bowls', emoji: '🍜', value: 'Noodle bowls' },
-  { label: 'Pasta dishes', emoji: '🍝', value: 'Pasta dishes' },
-  { label: 'Stir fry', emoji: '🥘', value: 'Stir fry' },
-  { label: 'Sheet pan meals', emoji: '🍳', value: 'Sheet pan meals' },
-  { label: 'Salad bowls', emoji: '🥗', value: 'Salad bowls' },
-  { label: 'Sandwiches', emoji: '🥪', value: 'Sandwiches' },
-  { label: 'Soups / stews', emoji: '🍲', value: 'Soups/stews' },
-  { label: 'Tacos', emoji: '🌮', value: 'Tacos' },
-  { label: 'Curry + rice', emoji: '🍛', value: 'Curry with rice' },
-  { label: 'One-pot meals', emoji: '🫕', value: 'One-pot meals' },
-  { label: 'No preference', emoji: '✨', value: 'none' },
+// Meal styles mapped to the cuisines they naturally belong to.
+// null = universal (shown for any cuisine selection)
+const MEAL_STYLES: { label: string; emoji: string; value: string; cuisines: string[] | null }[] = [
+  { label: 'Rice bowls', emoji: '🍚', value: 'Rice bowls', cuisines: ['Korean', 'Japanese', 'Chinese', 'Thai', 'Mexican', 'Middle Eastern', 'Mediterranean'] },
+  { label: 'Burrito / wraps', emoji: '🌯', value: 'Burritos/wraps', cuisines: ['Mexican', 'Middle Eastern', 'Mediterranean', 'Comfort/American'] },
+  { label: 'Noodle bowls', emoji: '🍜', value: 'Noodle bowls', cuisines: ['Korean', 'Japanese', 'Chinese', 'Thai'] },
+  { label: 'Pasta dishes', emoji: '🍝', value: 'Pasta dishes', cuisines: ['Italian', 'Mediterranean', 'Comfort/American'] },
+  { label: 'Stir fry', emoji: '🥘', value: 'Stir fry', cuisines: ['Korean', 'Japanese', 'Chinese', 'Thai'] },
+  { label: 'Sheet pan meals', emoji: '🍳', value: 'Sheet pan meals', cuisines: null },
+  { label: 'Salad bowls', emoji: '🥗', value: 'Salad bowls', cuisines: null },
+  { label: 'Sandwiches', emoji: '🥪', value: 'Sandwiches', cuisines: ['Italian', 'Comfort/American', 'Mediterranean', 'Middle Eastern'] },
+  { label: 'Soups / stews', emoji: '🍲', value: 'Soups/stews', cuisines: null },
+  { label: 'Tacos', emoji: '🌮', value: 'Tacos', cuisines: ['Mexican', 'Korean'] },
+  { label: 'Curry + rice', emoji: '🍛', value: 'Curry with rice', cuisines: ['Indian', 'Thai', 'Japanese'] },
+  { label: 'One-pot meals', emoji: '🫕', value: 'One-pot meals', cuisines: null },
+  { label: 'No preference', emoji: '✨', value: 'none', cuisines: null },
 ];
 
 const PREP_DAYS = [
@@ -270,8 +272,14 @@ export default function Quiz() {
     </QuizStep>,
     <QuizStep key={2} title="What meal styles do you prefer?" subtitle="Pick your favorites - we'll build about half your plan around these">
       <ChipGrid
-        options={MEAL_STYLES}
-        selected={profile.mealStyles || []}
+        options={MEAL_STYLES.filter(
+          (style) => style.cuisines === null || style.cuisines.some((c) => profile.cuisines.includes(c))
+        )}
+        selected={(profile.mealStyles || []).filter((v) => {
+          if (v === 'none') return true;
+          const style = MEAL_STYLES.find((s) => s.value === v);
+          return style && (style.cuisines === null || style.cuisines.some((c) => profile.cuisines.includes(c)));
+        })}
         onToggle={(v) => toggleArrayItem('mealStyles', v)}
       />
     </QuizStep>,
