@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TasteProfile } from '@/lib/types';
 import ChipGrid from './ChipGrid';
@@ -9,7 +9,6 @@ import TextInputStep from './TextInputStep';
 import Button from '../ui/Button';
 import Loading from '../ui/Loading';
 import UpgradePrompt from '../ui/UpgradePrompt';
-import AuthModal from './AuthModal';
 
 const HAS_GENERATED_KEY = 'spoonfed-has-generated';
 
@@ -96,8 +95,7 @@ export default function Quiz() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [checkingAccess, setCheckingAccess] = useState(true);
-  const [showGate, setShowGate] = useState<'upgrade' | 'signin' | null>(null);
+  const [showUpgradeGate, setShowUpgradeGate] = useState(false);
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
     proteins: [],
@@ -109,40 +107,6 @@ export default function Quiz() {
     prepDays: 5,
     servings: 2,
   });
-
-  // Check if user has already generated a plan and whether they can generate again
-  useEffect(() => {
-    const checkAccess = async () => {
-      const hasGenerated = localStorage.getItem(HAS_GENERATED_KEY);
-
-      if (!hasGenerated) {
-        // First time — always allowed
-        setCheckingAccess(false);
-        return;
-      }
-
-      // Has generated before — check if Pro
-      try {
-        const res = await fetch('/api/check-subscription');
-        const data = await res.json();
-
-        if (!data.authenticated) {
-          // Not signed in and already used free plan — need to sign in + upgrade
-          setShowGate('signin');
-        } else if (!data.isPro) {
-          // Signed in but not Pro — need to upgrade
-          setShowGate('upgrade');
-        }
-        // Pro users can always re-take
-      } catch {
-        // If check fails, let them through
-      }
-
-      setCheckingAccess(false);
-    };
-
-    checkAccess();
-  }, []);
 
   const updateProfile = (key: keyof TasteProfile, value: unknown) => {
     setProfile((prev) => ({ ...prev, [key]: value }));
@@ -189,6 +153,22 @@ export default function Quiz() {
   };
 
   const handleGenerate = async () => {
+    // Check if this is a second+ generation — gate behind Pro
+    const hasGenerated = localStorage.getItem(HAS_GENERATED_KEY);
+    if (hasGenerated) {
+      try {
+        const res = await fetch('/api/check-subscription');
+        const data = await res.json();
+        if (!data.isPro) {
+          // Not Pro — show upgrade prompt
+          setShowUpgradeGate(true);
+          return;
+        }
+      } catch {
+        // If check fails, let them through
+      }
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -205,7 +185,7 @@ export default function Quiz() {
 
       const plan = await res.json();
 
-      // Mark that user has generated a plan
+      // Mark that user has generated a plan (only after success)
       localStorage.setItem(HAS_GENERATED_KEY, 'true');
 
       // Store plan in sessionStorage for viewing
@@ -243,44 +223,8 @@ export default function Quiz() {
     }
   };
 
-  if (checkingAccess) {
-    return null;
-  }
-
-  // Gate: needs to sign in first, then upgrade
-  if (showGate === 'signin') {
-    return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="bg-white rounded-2xl border border-warmgray-200 p-8 text-center">
-          <div className="text-4xl mb-4">🍽️</div>
-          <h3 className="text-xl font-semibold text-warmgray-800 mb-2">
-            Want another plan?
-          </h3>
-          <p className="text-warmgray-500 mb-6">
-            You&apos;ve already used your free plan. Sign in and upgrade to Pro to generate unlimited meal plans.
-          </p>
-          <AuthModal
-            onClose={() => setShowGate(null)}
-            onSuccess={() => {
-              // After sign-in, re-check if they're Pro
-              fetch('/api/check-subscription')
-                .then((r) => r.json())
-                .then((data) => {
-                  if (data.isPro) {
-                    setShowGate(null);
-                  } else {
-                    setShowGate('upgrade');
-                  }
-                });
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Gate: signed in but needs Pro
-  if (showGate === 'upgrade') {
+  // Upgrade gate — shown at the generate step, not on page load
+  if (showUpgradeGate) {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center mb-4">
@@ -293,6 +237,14 @@ export default function Quiz() {
           </p>
         </div>
         <UpgradePrompt feature="Generating additional plans" />
+        <div className="text-center">
+          <button
+            onClick={() => setShowUpgradeGate(false)}
+            className="text-sm text-warmgray-400 hover:text-warmgray-600 transition-colors"
+          >
+            Back to quiz
+          </button>
+        </div>
       </div>
     );
   }
