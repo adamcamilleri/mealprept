@@ -95,6 +95,7 @@ export default function Quiz() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [showGate, setShowGate] = useState<'upgrade' | 'signin' | null>(null);
   const [profile, setProfile] = useState<TasteProfile>({
@@ -189,6 +190,7 @@ export default function Quiz() {
 
   const handleGenerate = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/generate-plan', {
         method: 'POST',
@@ -197,8 +199,8 @@ export default function Quiz() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to generate plan');
+        const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+        throw new Error(err.error || err.message || `Failed to generate plan (${res.status})`);
       }
 
       const plan = await res.json();
@@ -227,7 +229,7 @@ export default function Quiz() {
       router.push('/plan/preview');
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : 'Something went wrong. Try again!');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Try again!');
     } finally {
       setLoading(false);
     }
@@ -390,6 +392,13 @@ export default function Quiz() {
 
         {/* Current step */}
         {steps[step]}
+
+        {/* Error display */}
+        {error && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 animate-fadeIn">
+            {error}
+          </div>
+        )}
 
         {/* Navigation */}
         <div className="flex justify-between mt-8">

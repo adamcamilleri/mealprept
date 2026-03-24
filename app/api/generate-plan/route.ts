@@ -56,8 +56,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to generate plan. Please try again.' },
+      { error: `Failed to generate plan: ${message}` },
       { status: 500 }
     );
   }
