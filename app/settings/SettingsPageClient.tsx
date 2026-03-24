@@ -27,11 +27,11 @@ export default function SettingsPageClient({
   const [upgrading, setUpgrading] = useState(false);
   const [managingPortal, setManagingPortal] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState(subscription?.plan_type || 'free');
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
-    if (sessionId && subscription?.plan_type !== 'pro') {
-      // Just came back from checkout - verify payment
+    if (sessionId && currentPlan !== 'pro') {
       setVerifying(true);
       fetch('/api/verify-checkout', {
         method: 'POST',
@@ -41,29 +41,24 @@ export default function SettingsPageClient({
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            window.location.href = '/settings';
+            setCurrentPlan('pro');
+            window.history.replaceState({}, '', '/settings');
           }
         })
         .catch(console.error)
         .finally(() => setVerifying(false));
     } else if (!sessionId && subscription?.stripe_subscription_id) {
-      // No session_id - sync with Stripe to catch cancellations/changes
-      // Only run once per page load
-      const synced = sessionStorage.getItem('sub_synced');
-      if (!synced) {
-        sessionStorage.setItem('sub_synced', '1');
-        fetch('/api/sync-subscription', { method: 'POST' })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.plan !== subscription.plan_type) {
-              sessionStorage.removeItem('sub_synced');
-              window.location.href = '/settings';
-            }
-          })
-          .catch(console.error);
-      }
+      fetch('/api/sync-subscription', { method: 'POST' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.plan && data.plan !== currentPlan) {
+            setCurrentPlan(data.plan);
+          }
+        })
+        .catch(console.error);
     }
-  }, [searchParams, subscription, router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleUpgrade = async () => {
     setUpgrading(true);
@@ -141,15 +136,15 @@ export default function SettingsPageClient({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-warmgray-800 capitalize">
-                {verifying ? 'Verifying...' : (subscription?.plan_type || 'Free')}
+                {verifying ? 'Verifying...' : currentPlan}
               </p>
               <p className="text-xs text-warmgray-400 mt-0.5">
-                {subscription?.plan_type === 'pro'
+                {currentPlan === 'pro'
                   ? 'Unlimited plans, swaps, and fridge storage'
                   : '2 plans per month'}
               </p>
             </div>
-            {subscription?.plan_type !== 'pro' && (
+            {currentPlan !== 'pro' && (
               <Button size="sm" onClick={handleUpgrade} loading={upgrading}>
                 Upgrade
               </Button>
