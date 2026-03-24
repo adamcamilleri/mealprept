@@ -39,11 +39,19 @@ export default function PreviewPage() {
       setProfile(JSON.parse(profileData));
     }
 
-    // Check auth status
+    // Check auth status and listen for changes
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       setIsAuthenticated(!!user);
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsAuthenticated(!!session?.user);
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   const handleSavePlan = async () => {

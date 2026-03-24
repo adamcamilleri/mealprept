@@ -1,6 +1,20 @@
-import Quiz from '@/components/quiz/Quiz';
+'use client';
 
-export default function Home() {
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import Quiz from '@/components/quiz/Quiz';
+import AuthModal from '@/components/quiz/AuthModal';
+
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('signin') === 'true') {
+      setShowAuth(true);
+    }
+  }, [searchParams]);
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 sm:py-20">
       {/* Hero */}
@@ -21,6 +35,31 @@ export default function Home() {
 
       {/* Quiz */}
       <Quiz />
+
+      {/* Auth modal — triggered by ?signin=true redirect */}
+      {showAuth && (
+        <AuthModal
+          onClose={() => {
+            setShowAuth(false);
+            // Clean URL
+            window.history.replaceState({}, '', '/');
+          }}
+          onSuccess={() => {
+            setShowAuth(false);
+            window.history.replaceState({}, '', '/');
+            // Reload to pick up auth state everywhere
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <HomeContent />
+    </Suspense>
   );
 }

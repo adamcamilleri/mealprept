@@ -33,10 +33,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes
+  // Protected routes — /plan/preview is public (uses sessionStorage, no auth needed)
+  const pathname = request.nextUrl.pathname;
+  const publicPaths = ['/plan/preview'];
   const protectedPaths = ['/plan', '/plans', '/fridge', '/settings'];
-  const isProtected = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
+  const isPublicException = publicPaths.some((path) => pathname === path);
+  const isProtected = !isPublicException && protectedPaths.some((path) =>
+    pathname.startsWith(path)
   );
 
   if (isProtected && !user) {
