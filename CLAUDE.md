@@ -158,7 +158,7 @@ Each card shows:
 - Save up to 5 plans
 - Full grocery list
 
-**Pro tier ($4.99/month or $39.99/year):**
+**Pro tier ($3.99/month or $29.99/year):**
 - Unlimited plan generation
 - Unlimited saved plans
 - Swap individual recipes

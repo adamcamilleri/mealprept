@@ -65,7 +65,7 @@ export default function UpgradePrompt({ feature }: UpgradePromptProps) {
           loading={loading === 'monthly'}
           className="flex-1"
         >
-          $4.99/mo
+          $3.99/mo
         </Button>
         <Button
           variant="secondary"
@@ -74,11 +74,11 @@ export default function UpgradePrompt({ feature }: UpgradePromptProps) {
           loading={loading === 'annual'}
           className="flex-1"
         >
-          $39.99/yr
+          $29.99/yr
         </Button>
       </div>
       <p className="text-xs text-warmgray-300 mt-3">
-        Cancel anytime. Annual saves 33%.
+        Cancel anytime. Annual saves 37%.
       </p>
     </div>
   );
