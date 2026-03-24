@@ -12,6 +12,7 @@ interface SettingsPageClientProps {
     plan_type: string;
     status: string;
     stripe_customer_id?: string;
+    stripe_subscription_id?: string;
   } | null;
 }
 
@@ -30,6 +31,7 @@ export default function SettingsPageClient({
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
     if (sessionId && subscription?.plan_type !== 'pro') {
+      // Just came back from checkout - verify payment
       setVerifying(true);
       fetch('/api/verify-checkout', {
         method: 'POST',
@@ -44,6 +46,16 @@ export default function SettingsPageClient({
         })
         .catch(console.error)
         .finally(() => setVerifying(false));
+    } else if (!sessionId && subscription?.stripe_subscription_id) {
+      // No session_id - sync with Stripe to catch cancellations/changes
+      fetch('/api/sync-subscription', { method: 'POST' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.plan !== subscription.plan_type) {
+            window.location.href = '/settings';
+          }
+        })
+        .catch(console.error);
     }
   }, [searchParams, subscription, router]);
 
