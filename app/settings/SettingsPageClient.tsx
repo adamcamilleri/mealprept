@@ -105,7 +105,7 @@ export default function SettingsPageClient({
               <p className="text-xs text-warmgray-400 mt-0.5">
                 {subscription?.plan_type === 'pro'
                   ? 'Unlimited plans, swaps, and fridge storage'
-                  : '1 plan, 40 fridge items'}
+                  : '2 plans per month'}
               </p>
             </div>
             {subscription?.plan_type !== 'pro' && (
