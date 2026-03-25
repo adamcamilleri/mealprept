@@ -47,8 +47,8 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 glass bg-cream/70 border-b border-warmgray-100/60">
-      <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-cream border-b border-warmgray-200/40">
+      <div className="max-w-4xl mx-auto px-6 sm:px-8 h-14 flex items-center justify-between">
         <Link
           href="/"
           className="text-lg font-bold text-warmgray-800 tracking-tight transition-opacity hover:opacity-70"
@@ -97,7 +97,7 @@ export default function Header() {
                         className="fixed inset-0 z-40"
                         onClick={() => setShowMenu(false)}
                       />
-                      <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg shadow-warmgray-200/40 border border-warmgray-200/80 py-1.5 w-48 animate-fadeInScale">
+                      <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-2xl shadow-[0_4px_24px_rgba(50,48,47,0.1)] py-1.5 w-48 animate-fadeInScale">
                         <div className="px-3 py-2 border-b border-warmgray-100">
                           <p className="text-xs text-warmgray-400 truncate">
                             {user.email}
@@ -130,7 +130,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/?signin=true"
-                  className="ml-1 px-3.5 py-1.5 rounded-lg text-sm font-semibold text-coral-600 border border-coral-200 hover:bg-coral-50 hover:border-coral-300 transition-all duration-200"
+                  className="ml-1 px-4 py-1.5 rounded-full text-sm font-semibold text-warmgray-800 border border-warmgray-300 hover:bg-warmgray-50 hover:border-warmgray-400 transition-all duration-200"
                 >
                   Sign in
                 </Link>

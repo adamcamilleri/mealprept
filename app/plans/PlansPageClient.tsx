@@ -50,7 +50,7 @@ export default function PlansPageClient({ plans }: { plans: Plan[] }) {
           <Link
             key={plan.id}
             href={`/plan/${plan.id}`}
-            className="group block bg-white rounded-2xl border border-warmgray-200/80 p-5 hover:border-warmgray-300 hover:shadow-sm transition-all duration-200"
+            className="group block bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-6 hover:shadow-[0_4px_20px_rgba(50,48,47,0.1)] transition-all duration-200"
           >
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">

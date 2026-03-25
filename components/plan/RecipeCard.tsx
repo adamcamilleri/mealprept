@@ -20,11 +20,11 @@ export default function RecipeCard({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl border border-warmgray-200/80 overflow-hidden transition-all duration-200 hover:shadow-md hover:shadow-warmgray-200/30">
-      <div className="p-5 sm:p-6">
+    <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] overflow-hidden transition-all duration-200 hover:shadow-[0_4px_20px_rgba(50,48,47,0.1)]">
+      <div className="p-6 sm:p-8">
         <div className="flex justify-between items-start gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-warmgray-800 leading-snug">
+            <h3 className="text-xl sm:text-2xl font-bold text-warmgray-800 leading-snug">
               {recipe.name}
             </h3>
             <p className="text-warmgray-500 text-sm mt-1.5 leading-relaxed">

@@ -371,7 +371,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
         </div>
 
         {/* Add item form */}
-        <div className="bg-white rounded-2xl border border-warmgray-200 p-4 sm:p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <input
@@ -561,7 +561,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
 
         {/* Empty state */}
         {tabItems.length === 0 && (
-          <div className="bg-white rounded-2xl border border-warmgray-200 p-8 sm:p-12 text-center">
+          <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-8 sm:p-12 text-center">
             <div className="text-4xl mb-4">{tabConfig.emptyEmoji}</div>
             <h3 className="text-lg font-semibold text-warmgray-700 mb-2">
               {tabConfig.emptyTitle}

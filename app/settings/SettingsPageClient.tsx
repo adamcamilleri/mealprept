@@ -151,7 +151,7 @@ export default function SettingsPageClient({
 
       <div className="space-y-4">
         {/* Account */}
-        <div className="bg-white rounded-2xl border border-warmgray-200/80 p-5 sm:p-6">
+        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-6 sm:p-8">
           <h2 className="text-xs font-semibold text-warmgray-400 uppercase tracking-wider mb-3">
             Account
           </h2>
@@ -159,7 +159,7 @@ export default function SettingsPageClient({
         </div>
 
         {/* Subscription */}
-        <div className="bg-white rounded-2xl border border-warmgray-200/80 p-5 sm:p-6">
+        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-6 sm:p-8">
           <h2 className="text-xs font-semibold text-warmgray-400 uppercase tracking-wider mb-3">
             Plan
           </h2>
@@ -205,7 +205,7 @@ export default function SettingsPageClient({
         </div>
 
         {/* Danger zone */}
-        <div className="bg-white rounded-2xl border border-red-100 p-5 sm:p-6">
+        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-6 sm:p-8">
           <h2 className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">
             Danger Zone
           </h2>

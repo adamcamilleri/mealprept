@@ -219,7 +219,7 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-warmgray-200/80 p-5 sm:p-6">
+      <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-6 sm:p-8">
         <div className="flex justify-between items-center mb-5">
           <h2 className="text-sm font-bold text-warmgray-700 uppercase tracking-wider">
             Grocery List
@@ -232,10 +232,10 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
           </Button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {groceryList.map((category) => (
             <div key={category.category}>
-              <h3 className="text-sm font-bold text-coral-600 uppercase tracking-wider mb-3 pb-1.5 border-b border-warmgray-100/60">
+              <h3 className="text-xs font-semibold text-warmgray-400 uppercase tracking-[0.15em] mb-3 pb-2">
                 {category.category}
               </h3>
               <ul className="space-y-2">
@@ -293,7 +293,7 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
           {!isAuthenticated ? (
             <Link
               href="/?signin=true"
-              className="w-full bg-warmgray-50 hover:bg-warmgray-100 border border-warmgray-200 rounded-xl p-4 flex items-center justify-center gap-2 transition-colors block"
+              className="w-full bg-warmgray-50 hover:bg-warmgray-100 rounded-2xl p-4 flex items-center justify-center gap-2 transition-colors block"
             >
               <span className="text-lg">🧊</span>
               <span className="text-sm font-semibold text-warmgray-600">
@@ -320,7 +320,7 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
           ) : (
             <button
               onClick={openAddToFridgeModal}
-              className="w-full bg-coral-50 hover:bg-coral-100 border border-coral-200 rounded-xl p-4 flex items-center justify-center gap-2 transition-colors"
+              className="w-full bg-coral-50 hover:bg-coral-100 rounded-2xl p-4 flex items-center justify-center gap-2 transition-colors"
             >
               <span className="text-lg">🧊</span>
               <span className="text-sm font-semibold text-coral-700">

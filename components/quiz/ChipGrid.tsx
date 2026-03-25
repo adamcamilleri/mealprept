@@ -26,7 +26,7 @@ export default function ChipGrid({
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {options.map((option) => {
         const isSelected = selected.includes(option.value);
         return (
@@ -34,13 +34,13 @@ export default function ChipGrid({
             key={option.value}
             onClick={() => handleClick(option.value)}
             className={`
-              group relative p-3.5 rounded-xl border text-left
+              group relative p-4 rounded-2xl text-left
               transition-all duration-200 ease-out
-              min-h-[60px] flex items-center gap-2.5
+              min-h-[64px] flex items-center gap-3
               ${
                 isSelected
-                  ? 'border-coral-400 bg-gradient-to-br from-coral-50 to-coral-100/60 shadow-[0_0_0_1px_theme(colors.coral.400)] scale-[1.02]'
-                  : 'border-warmgray-200/80 bg-white hover:border-warmgray-300 hover:shadow-sm active:scale-[0.97]'
+                  ? 'bg-coral-500 shadow-[0_2px_12px_rgba(232,108,58,0.25)] scale-[1.02]'
+                  : 'bg-white shadow-[0_1px_3px_rgba(50,48,47,0.06)] hover:shadow-[0_2px_8px_rgba(50,48,47,0.1)] active:scale-[0.97]'
               }
             `}
           >
@@ -51,7 +51,7 @@ export default function ChipGrid({
             )}
             <span
               className={`text-sm font-medium leading-snug ${
-                isSelected ? 'text-coral-700' : 'text-warmgray-700'
+                isSelected ? 'text-white' : 'text-warmgray-700'
               }`}
             >
               {option.label}
@@ -60,9 +60,9 @@ export default function ChipGrid({
             {/* Selection indicator */}
             <span
               className={`
-                absolute top-2 right-2 w-4.5 h-4.5 rounded-full bg-coral-500 flex items-center justify-center
+                absolute top-2.5 right-2.5 w-4.5 h-4.5 rounded-full flex items-center justify-center
                 transition-transform duration-200 ease-out
-                ${isSelected ? 'scale-100' : 'scale-0'}
+                ${isSelected ? 'scale-100 bg-white/25' : 'scale-0 bg-coral-500'}
               `}
             >
               <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>

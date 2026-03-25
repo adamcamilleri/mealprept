@@ -58,7 +58,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
         className="absolute inset-0 bg-warmgray-900/30 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-2xl p-7 sm:p-8 max-w-md w-full shadow-xl animate-fadeInScale">
+      <div className="relative bg-white rounded-2xl p-8 sm:p-10 max-w-md w-full shadow-[0_8px_40px_rgba(50,48,47,0.12)] animate-fadeInScale">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-lg text-warmgray-300 hover:text-warmgray-500 hover:bg-warmgray-100 transition-colors"
@@ -79,7 +79,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
 
         <button
           onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-2.5 p-2.5 rounded-xl border border-warmgray-200 hover:border-warmgray-300 hover:bg-warmgray-50 text-warmgray-700 text-sm font-medium transition-all duration-200"
+          className="w-full flex items-center justify-center gap-2.5 p-3 rounded-full border border-warmgray-200 hover:border-warmgray-300 hover:bg-warmgray-50 text-warmgray-700 text-sm font-medium transition-all duration-200"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
@@ -120,7 +120,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2.5 rounded-xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
+            className="w-full p-3.5 rounded-2xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
             required
           />
           <div className="relative">
@@ -129,7 +129,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2.5 pr-10 rounded-xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
+              className="w-full p-3.5 pr-10 rounded-2xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
               required
               minLength={6}
             />

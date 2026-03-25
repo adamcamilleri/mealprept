@@ -312,14 +312,13 @@ export default function Quiz() {
     <>
       <div className="max-w-2xl mx-auto">
         {/* Progress bar */}
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-warmgray-400 mb-2.5">
+        <div className="mb-10">
+          <div className="flex justify-between text-sm text-warmgray-400 mb-3">
             <span className="font-medium">Step {step + 1} of {TOTAL_STEPS}</span>
-            <span className="text-xs text-warmgray-300">{Math.round(((step + 1) / TOTAL_STEPS) * 100)}%</span>
           </div>
-          <div className="w-full h-2.5 bg-warmgray-100 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-warmgray-800/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-coral-400 to-coral-500 rounded-full transition-all duration-500 ease-out"
+              className="h-full bg-coral-500 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
             />
           </div>

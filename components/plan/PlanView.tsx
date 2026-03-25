@@ -70,13 +70,13 @@ export default function PlanView({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-8">
       {/* Header */}
       <div className="text-center animate-fadeIn">
-        <h1 className="text-2xl sm:text-3xl font-bold text-warmgray-800 tracking-tight">
+        <h1 className="text-3xl sm:text-5xl font-extrabold text-warmgray-800 tracking-tight leading-[1.1]">
           {plan.planName}
         </h1>
-        <p className="text-warmgray-400 text-sm mt-2">
+        <p className="text-warmgray-400 text-sm mt-3">
           {recipes.length} recipes
           <span className="mx-1.5 text-warmgray-200">·</span>
           {recipes[0]?.servings} servings each
@@ -97,7 +97,7 @@ export default function PlanView({
       </div>
 
       {/* Recipes */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {recipes.map((recipe) => (
           <RecipeCard
             key={recipe.id}
@@ -113,8 +113,8 @@ export default function PlanView({
       <GroceryList groceryList={groceryList} isAuthenticated={isAuthenticated} />
 
       {/* Prep Order */}
-      <div className="bg-white rounded-2xl border border-warmgray-200/80 p-5 sm:p-6">
-        <h2 className="text-xs font-semibold text-warmgray-400 uppercase tracking-wider mb-3">
+      <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-6 sm:p-8">
+        <h2 className="text-xs font-semibold text-warmgray-400 uppercase tracking-[0.15em] mb-3">
           Prep Day Order
         </h2>
         <p className="text-warmgray-600 text-sm leading-relaxed">{plan.prepOrder}</p>

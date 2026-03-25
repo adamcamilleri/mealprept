@@ -78,7 +78,7 @@ export default function InstallPrompt() {
 
   return (
     <>
-      <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white border border-warmgray-200 rounded-2xl shadow-lg p-4 z-50 animate-fadeInScale">
+      <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white rounded-2xl shadow-[0_4px_24px_rgba(50,48,47,0.12)] p-4 z-50 animate-fadeInScale">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-coral-500 flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-sm">N</span>
@@ -100,14 +100,14 @@ export default function InstallPrompt() {
           {deferredPrompt ? (
             <button
               onClick={handleInstall}
-              className="w-full py-2 px-4 bg-coral-500 hover:bg-coral-600 text-white text-sm font-medium rounded-xl transition-colors"
+              className="w-full py-2 px-4 bg-coral-500 hover:bg-coral-600 text-white text-sm font-medium rounded-full transition-colors"
             >
               Add to home screen
             </button>
           ) : isIOS ? (
             <button
               onClick={() => setShowIOSGuide(!showIOSGuide)}
-              className="w-full py-2 px-4 bg-coral-500 hover:bg-coral-600 text-white text-sm font-medium rounded-xl transition-colors"
+              className="w-full py-2 px-4 bg-coral-500 hover:bg-coral-600 text-white text-sm font-medium rounded-full transition-colors"
             >
               How to add
             </button>

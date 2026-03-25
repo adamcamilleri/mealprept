@@ -29,9 +29,9 @@ export default function Loading() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] gap-8">
       {/* Spinner ring */}
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 rounded-full border-[3px] border-warmgray-100" />
-        <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-coral-500 animate-spin-ring" />
+      <div className="relative w-10 h-10">
+        <div className="absolute inset-0 rounded-full border-[2px] border-warmgray-100" />
+        <div className="absolute inset-0 rounded-full border-[2px] border-transparent border-t-coral-500 animate-spin-ring" />
       </div>
 
       <div
@@ -39,8 +39,8 @@ export default function Loading() {
           fade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1.5'
         }`}
       >
-        <span className="text-xl">{messages[messageIndex].emoji}</span>
-        <p className="text-warmgray-500 text-base font-medium">
+        <span className="text-lg">{messages[messageIndex].emoji}</span>
+        <p className="text-warmgray-400 text-sm font-medium">
           {messages[messageIndex].text}
         </p>
       </div>
