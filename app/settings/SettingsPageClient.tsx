@@ -127,6 +127,11 @@ export default function SettingsPageClient({
 
     setDeleting(true);
     try {
+      const res = await fetch('/api/delete-account', { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete account');
+      }
       await supabase.auth.signOut();
       router.push('/');
     } catch {

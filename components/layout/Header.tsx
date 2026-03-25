@@ -42,7 +42,7 @@ export default function Header() {
   };
 
   const navLinks = [
-    { href: '/preps', label: 'My Preps' },
+    { href: '/plans', label: 'My Plans' },
     ...(user ? [{ href: '/fridge', label: 'Fridge' }] : []),
   ];
 

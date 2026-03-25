@@ -10,16 +10,14 @@ interface UpgradePromptProps {
 export default function UpgradePrompt({ feature }: UpgradePromptProps) {
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleCheckout = async (annual: boolean) => {
-    setLoading(annual ? 'annual' : 'monthly');
+  const handleCheckout = async () => {
+    setLoading('monthly');
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          priceId: annual
-            ? process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID
-            : process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
         }),
       });
 
@@ -58,27 +56,18 @@ export default function UpgradePrompt({ feature }: UpgradePromptProps) {
           : "You've hit the free tier limit."}{' '}
         Unlimited plans, recipe swaps, and more.
       </p>
-      <div className="flex flex-col sm:flex-row gap-2.5 justify-center max-w-xs mx-auto">
+      <div className="flex justify-center max-w-xs mx-auto">
         <Button
           size="md"
-          onClick={() => handleCheckout(false)}
+          onClick={handleCheckout}
           loading={loading === 'monthly'}
           className="flex-1"
         >
           $3.99/mo
         </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={() => handleCheckout(true)}
-          loading={loading === 'annual'}
-          className="flex-1"
-        >
-          $29.99/yr
-        </Button>
       </div>
       <p className="text-xs text-warmgray-300 mt-3">
-        Cancel anytime. Annual saves 37%.
+        Cancel anytime.
       </p>
     </div>
   );

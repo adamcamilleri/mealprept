@@ -183,20 +183,6 @@ export default function Quiz() {
       sessionStorage.setItem('generatedPlan', JSON.stringify(plan));
       sessionStorage.setItem('tasteProfile', JSON.stringify(profile));
 
-      // Also save to localStorage for My Preps
-      try {
-        const savedPlans = JSON.parse(localStorage.getItem('nochef-plans') || '[]');
-        savedPlans.unshift({
-          id: Date.now(),
-          plan,
-          tasteProfile: profile,
-          createdAt: new Date().toISOString(),
-        });
-        localStorage.setItem('nochef-plans', JSON.stringify(savedPlans));
-      } catch (e) {
-        console.error('Failed to save plan to localStorage', e);
-      }
-
       router.push('/plan/preview');
     } catch (err) {
       console.error(err);
