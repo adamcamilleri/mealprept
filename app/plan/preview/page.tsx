@@ -122,6 +122,21 @@ export default function PreviewPage() {
           </Link>
         </div>
 
+        {/* Save banner for unauthenticated users */}
+        {!isAuthenticated && !saved && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-4">
+            <p className="text-sm text-amber-800">
+              This plan disappears when you leave. Sign up free to save it.
+            </p>
+            <button
+              onClick={() => setShowAuth(true)}
+              className="text-sm font-semibold text-coral-500 hover:text-coral-600 transition-colors whitespace-nowrap"
+            >
+              Sign up
+            </button>
+          </div>
+        )}
+
         <PlanView plan={plan} profile={profile} isPro={false} isAuthenticated={isAuthenticated} />
 
         {/* Post-plan actions */}
@@ -139,8 +154,8 @@ export default function PreviewPage() {
               {isAuthenticated ? 'Save this plan' : 'Sign in to save'}
             </Button>
           )}
-          <Link href="/preps">
-            <Button variant="secondary">View My Preps</Button>
+          <Link href="/">
+            <Button variant="secondary">Generate another plan</Button>
           </Link>
         </div>
       </div>
