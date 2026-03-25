@@ -86,10 +86,10 @@ export default function Quiz() {
     cuisines: [],
     mealType: undefined,
     proteins: [],
-    effortLevel: 'medium',
+    effortLevel: '',
     hardNos: [],
-    prepDays: 5,
-    servings: 2,
+    prepDays: 0,
+    servings: 0,
   });
 
   const updateProfile = (key: keyof TasteProfile, value: unknown) => {
