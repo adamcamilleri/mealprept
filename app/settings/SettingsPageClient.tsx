@@ -28,6 +28,8 @@ export default function SettingsPageClient({
   const [managingPortal, setManagingPortal] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [currentPlan, setCurrentPlan] = useState(subscription?.plan_type || 'free');
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
+  const [periodEnd, setPeriodEnd] = useState<string | null>(null);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -53,6 +55,10 @@ export default function SettingsPageClient({
         .then((data) => {
           if (data.plan && data.plan !== currentPlan) {
             setCurrentPlan(data.plan);
+          }
+          if (data.cancelAtPeriodEnd) {
+            setCancelAtPeriodEnd(true);
+            setPeriodEnd(data.currentPeriodEnd);
           }
         })
         .catch(console.error);
@@ -143,6 +149,19 @@ export default function SettingsPageClient({
                   ? 'Unlimited plans, swaps, and fridge storage'
                   : '2 plans per month'}
               </p>
+              {cancelAtPeriodEnd && periodEnd && (
+                <p className="text-xs text-amber-600 mt-2 bg-amber-50 rounded-lg px-3 py-2">
+                  Your subscription is set to cancel on{' '}
+                  <span className="font-semibold">
+                    {new Date(periodEnd).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                  . You&apos;ll keep Pro access until then.
+                </p>
+              )}
             </div>
             {currentPlan !== 'pro' && (
               <Button size="sm" onClick={handleUpgrade} loading={upgrading}>

@@ -34,19 +34,26 @@ export async function POST() {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    const cancelAtPeriodEnd = (stripeSub as unknown as { cancel_at_period_end: boolean }).cancel_at_period_end;
+    const periodEnd = new Date((stripeSub as unknown as { current_period_end: number }).current_period_end * 1000).toISOString();
+
     if (stripeSub.status === 'active') {
       await adminSupabase
         .from('subscriptions')
         .update({
           plan_type: 'pro',
-          status: 'active',
-          current_period_end: new Date((stripeSub as unknown as { current_period_end: number }).current_period_end * 1000).toISOString(),
+          status: cancelAtPeriodEnd ? 'canceled' : 'active',
+          current_period_end: periodEnd,
         })
         .eq('user_id', user.id);
 
-      return NextResponse.json({ plan: 'pro' });
+      return NextResponse.json({
+        plan: 'pro',
+        cancelAtPeriodEnd,
+        currentPeriodEnd: periodEnd,
+      });
     } else {
-      // canceled, past_due, unpaid, etc.
+      // fully canceled, past_due, unpaid, etc.
       await adminSupabase
         .from('subscriptions')
         .update({
