@@ -29,13 +29,14 @@ export async function POST() {
     });
     const stripeSub = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
 
-    // Access fields safely
-    const subData = stripeSub as unknown as Record<string, unknown>;
-    const cancelAtPeriodEnd = !!subData.cancel_at_period_end;
-    const periodEndRaw = subData.current_period_end;
+    // Access fields - cancel_at_period_end is a direct field,
+    // current_period_end is in raw JSON but not typed in newer SDK
+    const cancelAtPeriodEnd = !!stripeSub.cancel_at_period_end;
+    const rawJson = JSON.parse(JSON.stringify(stripeSub));
+    const periodEndRaw = rawJson.current_period_end;
     const periodEnd = typeof periodEndRaw === 'number'
       ? new Date(periodEndRaw * 1000).toISOString()
-      : null;
+      : (stripeSub.cancel_at ? new Date(stripeSub.cancel_at * 1000).toISOString() : null);
 
     const adminSupabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
