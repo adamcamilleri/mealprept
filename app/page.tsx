@@ -16,20 +16,21 @@ function HomeContent() {
   }, [searchParams]);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-24 sm:py-32">
+    <div className="max-w-3xl mx-auto px-6 py-16 sm:py-24">
       {/* Hero */}
-      <div className="text-center mb-20 animate-fadeIn">
-        <h1 className="text-5xl sm:text-7xl font-extrabold text-warmgray-800 tracking-tight leading-[1.05] mb-6">
+      <div className="text-center mb-16 animate-fadeIn">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-coral-50 text-coral-600 text-xs font-semibold tracking-wide mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-coral-500 animate-pulse" />
+          Free to use &middot; No account needed
+        </div>
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-warmgray-800 tracking-tight leading-[1.05] mb-6">
           What&apos;s for dinner?
           <br />
           <span className="text-warmgray-300">We got you.</span>
         </h1>
-        <p className="text-base sm:text-lg text-warmgray-500 max-w-lg mx-auto leading-relaxed mb-6">
-          Tell us what your family loves eating. We&apos;ll build a week of
-          recipes you&apos;ll actually look forward to, plus one grocery list.
-        </p>
-        <p className="text-xs text-warmgray-400 tracking-wide">
-          500+ home cooks who stopped stressing about dinner
+        <p className="text-base sm:text-lg text-warmgray-400 max-w-md mx-auto leading-relaxed">
+          Tell us what you love eating. Get a week of meals
+          you&apos;ll actually look forward to, plus one grocery list.
         </p>
       </div>
 
