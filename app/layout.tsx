@@ -3,6 +3,7 @@ import { DM_Sans } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import InstallPrompt from '@/components/ui/InstallPrompt';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -34,6 +35,7 @@ export default function RootLayout({
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <InstallPrompt />
       </body>
     </html>
   );
