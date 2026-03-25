@@ -31,6 +31,21 @@ export default function SettingsPageClient({
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
   const [periodEnd, setPeriodEnd] = useState<string | null>(null);
 
+  const syncSubscription = () => {
+    fetch('/api/sync-subscription', { method: 'POST' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.plan) {
+          setCurrentPlan(data.plan);
+        }
+        setCancelAtPeriodEnd(!!data.cancelAtPeriodEnd);
+        if (data.currentPeriodEnd) {
+          setPeriodEnd(data.currentPeriodEnd);
+        }
+      })
+      .catch(console.error);
+  };
+
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
     if (sessionId && currentPlan !== 'pro') {
@@ -44,24 +59,15 @@ export default function SettingsPageClient({
         .then((data) => {
           if (data.success) {
             setCurrentPlan('pro');
+            setCancelAtPeriodEnd(false);
             window.history.replaceState({}, '', '/settings');
           }
         })
         .catch(console.error)
         .finally(() => setVerifying(false));
-    } else if (!sessionId && subscription?.stripe_subscription_id) {
-      fetch('/api/sync-subscription', { method: 'POST' })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.plan && data.plan !== currentPlan) {
-            setCurrentPlan(data.plan);
-          }
-          if (data.cancelAtPeriodEnd) {
-            setCancelAtPeriodEnd(true);
-            setPeriodEnd(data.currentPeriodEnd);
-          }
-        })
-        .catch(console.error);
+    } else {
+      // Always sync with Stripe on page load
+      syncSubscription();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -92,7 +98,10 @@ export default function SettingsPageClient({
       const res = await fetch('/api/create-portal', { method: 'POST' });
       if (!res.ok) throw new Error('Failed to create portal session');
       const { url } = await res.json();
-      if (url) window.location.href = url;
+      if (url) {
+        // Open portal in same tab - when user returns, page reloads and sync runs
+        window.location.href = url;
+      }
     } catch {
       alert('Something went wrong. Please try again.');
     } finally {
