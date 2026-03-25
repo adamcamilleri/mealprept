@@ -11,6 +11,13 @@ const SYSTEM_PROMPT = `You are a meal prep expert and home cook who prioritizes 
 
 Your job: create meal prep plans that people will genuinely look forward to eating all week. Think restaurant-quality flavors, not "grilled chicken breast and steamed broccoli."
 
+MEAL TYPE AWARENESS: The user may specify a meal type (breakfast, lunch, dinner, or mix). Tailor ALL recipes to that meal type:
+- Breakfast: focus on breakfast/brunch recipes that meal prep well (egg bakes, overnight oats, breakfast burritos, frittatas, etc.)
+- Lunch: focus on portable, reheat-friendly lunch recipes (grain bowls, wraps, salads with protein, etc.)
+- Dinner: focus on satisfying dinner recipes
+- Mix: generate a variety across breakfast, lunch, and dinner
+If no meal type is specified, default to dinner recipes.
+
 CRITICAL RULES:
 1. Every recipe name should sound like something you'd see on a restaurant menu or a popular food blog - appetizing, specific, and exciting. NOT generic names like "Chicken Stir Fry." YES names like "Crispy Garlic-Ginger Chicken with Sesame Noodles."
 
@@ -33,22 +40,32 @@ CRITICAL RULES:
 
 9. Generate the combined grocery list yourself with merged quantities. Group by category: Produce, Protein, Dairy/Eggs, Pantry Staples, Spices/Sauces.
 
-10. RECIPE MEASUREMENTS: Use grams for all ingredients where it makes sense. For example: "200g chicken breast", "150g rice", "30g soy sauce". For small amounts of spices, use teaspoons/tablespoons. For liquids like oil, use tablespoons. Always be precise with grams - no vague measurements.
+10. Use REAL-WORLD shopping and cooking measurements, not abstract ones:
+   - GOOD: "1 bell pepper", "3 cloves garlic", "1 thumb-sized piece of ginger", "1 bunch cilantro", "2 chicken breasts", "1 can coconut milk (400ml)", "1 lime (juiced)", "half an onion (diced)"
+   - BAD: "150g bell pepper", "0.25 cups cilantro", "28g garlic"
+   - Use grams/ml ONLY for things that genuinely need precision: rice (300g), pasta (250g), flour (200g), liquids like soy sauce (2 tbsp), oil (1 tbsp)
+   - For proteins, use pieces AND weight: "2 chicken breasts (~500g total)", "1 salmon fillet (~200g)"
+   - For spices, use teaspoons/tablespoons: "1 tsp cumin", "2 tbsp soy sauce"
+   - The grocery list should read like a real shopping list: "1 bunch cilantro", "1 head garlic", "3 limes", "1 bag spinach", NOT "42g cilantro"
 
-11. GROCERY LIST MEASUREMENTS: Use real-world shopping quantities, NOT cooking measurements. Think about what you'd actually buy at the store:
-   - "1 bunch cilantro" NOT "0.5 cups cilantro"
-   - "1 knob ginger" NOT "15g ginger"
-   - "2 onions" NOT "200g onion"
-   - "1 head garlic" NOT "6 cloves garlic"
-   - "500g chicken breast" NOT "2 breasts"
-   - "1 can black beans (400g)" NOT "200g black beans"
-   - "1 bag rice (500g)" NOT "300g rice"
-   - "1 lime" NOT "30ml lime juice"
-   - "1 bottle soy sauce" only if they might not have it - otherwise omit pantry staples people typically own
+11. BASE YOUR RECIPES ON WELL-KNOWN, TESTED RECIPES from popular cooking sites and cookbooks. Your ingredient ratios should match what home cooks find on AllRecipes, Serious Eats, Food Wishes, Budget Bytes, and similar trusted sources. Do NOT invent untested ratios.
+   - A standard stir fry sauce is roughly: 3 tbsp soy sauce, 1 tbsp sesame oil, 1 tbsp rice vinegar, 1 tsp cornstarch
+   - A basic pasta for 4 uses roughly 400g pasta, 2 tbsp olive oil, 3 cloves garlic
+   - A standard marinade for 500g chicken: 2 tbsp soy sauce, 1 tbsp oil, 1 tsp each of garlic/ginger
+   - If you're unsure about proportions, err on the side of what a tested recipe from a major cooking site would use
+   - NEVER guess at baking ratios - those must be precise
+
+12. GROCERY LIST MEASUREMENTS: The grocery list should read like an actual shopping list someone would write on their phone:
+   - "1 bunch cilantro" not "0.25 cups cilantro"
+   - "1 head garlic" not "6 cloves garlic" (tell them the whole head)
+   - "3 limes" not "45ml lime juice"
+   - "1 bag baby spinach" not "200g spinach"
+   - "2 cans coconut milk (400ml each)" not "800ml coconut milk"
+   - Proteins: "4 chicken breasts (~1kg)" or "500g ground beef"
 
 CRITICAL JSON RULES:
 - Respond ONLY in valid JSON. No markdown, no backticks, no extra text.
-- For ingredient amounts, ALWAYS use decimal numbers like 0.5, 0.25, 0.75 - NEVER use fractions like 1/2, 1/4, 3/4. This is extremely important for valid JSON.
+- Ingredient amounts are STRINGS, not numbers. Use real-world descriptions like "2 breasts (~500g)", "1 bunch", "3 cloves", "2 tbsp". NEVER use fractions like 1/2 - write "0.5" or "half" instead.
 
 JSON structure:
 {
@@ -64,10 +81,10 @@ JSON structure:
       "servings": number,
       "ingredients": [
         {
-          "item": "string",
-          "amount": "number - weight in grams where possible, USE DECIMALS like 0.5 not fractions",
-          "unit": "string - use 'g' for grams, 'tbsp' for tablespoons, 'tsp' for teaspoons, 'ml' for liquids",
-          "notes": "string - optional, e.g. diced, boneless skinless"
+          "item": "string - the ingredient name",
+          "amount": "string - real-world quantity like '2 breasts (~500g)', '1 bunch', '3 cloves', '1 can (400ml)', '2 tbsp'",
+          "unit": "string - can be empty if amount is self-describing like '1 bunch cilantro'",
+          "notes": "string - optional prep notes like 'diced', 'minced', 'bone-in skin-on'"
         }
       ],
       "steps": ["string - concise numbered instructions"],
@@ -99,7 +116,17 @@ function buildUserPrompt(profile: TasteProfile): string {
 
   const mealStyles = profile.mealStyles?.filter((s) => s !== 'none') || [];
 
+  const mealTypeMap: Record<string, string> = {
+    breakfast: 'Generate breakfast/brunch recipes suitable for meal prep.',
+    lunch: 'Generate lunch recipes that are portable and reheat well.',
+    dinner: 'Generate dinner recipes.',
+    mix: 'Generate a mix of breakfast, lunch, and dinner recipes.',
+  };
+  const mealTypeInstruction = profile.mealType ? mealTypeMap[profile.mealType] : mealTypeMap.dinner;
+
   let prompt = `Create a ${profile.prepDays}-day meal prep plan.
+
+${mealTypeInstruction}
 
 This person's taste profile:
 - Cuisines they love: ${profile.cuisines.join(', ')}
@@ -196,7 +223,7 @@ User's taste profile:
 - Hard no's: ${profile.hardNos.length > 0 ? profile.hardNos.join(', ') : 'None'}
 - Servings: ${profile.servings}
 
-Return ONLY the new recipe object AND an updated groceryList for ALL remaining recipes plus the new one. Use the same JSON structure as before but with a single recipe in the recipes array and the full updated groceryList. Use decimal numbers for amounts (0.5 not 1/2).`;
+Return ONLY the new recipe object AND an updated groceryList for ALL remaining recipes plus the new one. Use the same JSON structure as before but with a single recipe in the recipes array and the full updated groceryList. Use real-world measurements for amounts (strings like "2 breasts (~500g)", "1 bunch", "3 tbsp").`;
 
   const completion = await groq.chat.completions.create({
     model: GROQ_MODEL,

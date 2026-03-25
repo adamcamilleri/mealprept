@@ -48,17 +48,28 @@ export default function RecipeCard({
               </span>
             </div>
           </div>
-          {canSwap && onSwap && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onSwap(recipe.id)}
-              loading={swapping}
-              disabled={swapping}
-              className="flex-shrink-0"
-            >
-              Swap
-            </Button>
+          {onSwap && (
+            canSwap ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onSwap(recipe.id)}
+                loading={swapping}
+                disabled={swapping}
+                className="flex-shrink-0"
+              >
+                Swap for new meal ↻
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled
+                className="flex-shrink-0 opacity-50 cursor-not-allowed"
+              >
+                Swap (Pro)
+              </Button>
+            )
           )}
         </div>
 

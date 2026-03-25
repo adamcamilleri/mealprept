@@ -75,6 +75,13 @@ const MEAL_STYLES: { label: string; emoji: string; value: string; cuisines: stri
   { label: 'No preference', emoji: '✨', value: 'none', cuisines: null },
 ];
 
+const MEAL_TYPES = [
+  { label: 'Breakfast', emoji: '🌅', value: 'breakfast' },
+  { label: 'Lunch', emoji: '🥪', value: 'lunch' },
+  { label: 'Dinner', emoji: '🌙', value: 'dinner' },
+  { label: 'Mix it up', emoji: '🎲', value: 'mix' },
+];
+
 const PREP_DAYS = [
   { label: '3 days', value: '3' },
   { label: '4 days', value: '4' },
@@ -88,7 +95,7 @@ const SERVINGS = [
   { label: '4', value: '4' },
 ];
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
 export default function Quiz() {
   const router = useRouter();
@@ -99,6 +106,7 @@ export default function Quiz() {
   const [upgradeMessage, setUpgradeMessage] = useState('');
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
+    mealType: undefined,
     proteins: [],
     favoriteDishes: '',
     effortLevel: 'medium',
@@ -133,20 +141,22 @@ export default function Quiz() {
       case 0:
         return profile.cuisines.length > 0;
       case 1:
-        return profile.proteins.length > 0;
+        return !!profile.mealType;
       case 2:
-        return true;
+        return profile.proteins.length > 0;
       case 3:
         return true;
       case 4:
-        return !!profile.effortLevel;
-      case 5:
         return true;
+      case 5:
+        return !!profile.effortLevel;
       case 6:
         return true;
       case 7:
-        return profile.prepDays > 0;
+        return true;
       case 8:
+        return profile.prepDays > 0;
+      case 9:
         return profile.servings > 0;
       default:
         return false;
@@ -237,14 +247,22 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('cuisines', v)}
       />
     </QuizStep>,
-    <QuizStep key={1} title="Pick your go-to proteins" subtitle="Pick at least 1">
+    <QuizStep key={1} title="What meal are you planning?" subtitle="Pick one">
+      <ChipGrid
+        options={MEAL_TYPES}
+        selected={profile.mealType ? [profile.mealType] : []}
+        onToggle={(v) => updateProfile('mealType', v)}
+        multiSelect={false}
+      />
+    </QuizStep>,
+    <QuizStep key={2} title="Pick your go-to proteins" subtitle="Pick at least 1">
       <ChipGrid
         options={PROTEINS}
         selected={profile.proteins}
         onToggle={(v) => toggleArrayItem('proteins', v)}
       />
     </QuizStep>,
-    <QuizStep key={2} title="What meal styles do you prefer?" subtitle="Pick your favorites - we'll build about half your plan around these">
+    <QuizStep key={3} title="What meal styles do you prefer?" subtitle="Pick your favorites - we'll build about half your plan around these">
       <ChipGrid
         options={MEAL_STYLES.filter(
           (style) => style.cuisines === null || style.cuisines.some((c) => profile.cuisines.includes(c))
@@ -257,7 +275,7 @@ export default function Quiz() {
         onToggle={(v) => toggleArrayItem('mealStyles', v)}
       />
     </QuizStep>,
-    <QuizStep key={3} title="Any favorite dishes or foods you love?" subtitle="We'll include similar flavors in your plan">
+    <QuizStep key={4} title="Any favorite dishes or foods you love?" subtitle="We'll include similar flavors in your plan">
       <TextInputStep
         value={profile.favoriteDishes || ''}
         onChange={(v) => updateProfile('favoriteDishes', v)}
@@ -266,7 +284,7 @@ export default function Quiz() {
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
-    <QuizStep key={4} title="How much cooking effort this week?">
+    <QuizStep key={5} title="How much cooking effort this week?">
       <ChipGrid
         options={EFFORT_LEVELS}
         selected={[profile.effortLevel]}
@@ -274,7 +292,7 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    <QuizStep key={5} title="Any foods you're just not a fan of?" subtitle="We'll steer clear of these">
+    <QuizStep key={6} title="Any foods you're just not a fan of?" subtitle="We'll steer clear of these">
       <TextInputStep
         value={profile.leastFavorites || ''}
         onChange={(v) => updateProfile('leastFavorites', v)}
@@ -283,14 +301,14 @@ export default function Quiz() {
         onSkip={() => setStep((prev) => prev + 1)}
       />
     </QuizStep>,
-    <QuizStep key={6} title="Any ingredients you hate?" subtitle="Optional, skip if you eat everything">
+    <QuizStep key={7} title="Any ingredients you hate?" subtitle="Optional, skip if you eat everything">
       <ChipGrid
         options={HARD_NOS}
         selected={profile.hardNos.length === 0 ? [] : profile.hardNos}
         onToggle={(v) => toggleArrayItem('hardNos', v)}
       />
     </QuizStep>,
-    <QuizStep key={7} title="How many days of meal prep?">
+    <QuizStep key={8} title="How many days of meal prep?">
       <ChipGrid
         options={PREP_DAYS}
         selected={[String(profile.prepDays)]}
@@ -298,7 +316,7 @@ export default function Quiz() {
         multiSelect={false}
       />
     </QuizStep>,
-    <QuizStep key={8} title="Servings per meal?">
+    <QuizStep key={9} title="Servings per meal?">
       <ChipGrid
         options={SERVINGS}
         selected={[String(profile.servings)]}

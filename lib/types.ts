@@ -2,6 +2,7 @@ export interface TasteProfile {
   id?: string;
   userId?: string;
   cuisines: string[];
+  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'mix';
   proteins: string[];
   favoriteDishes?: string;
   effortLevel: 'quick' | 'medium' | 'involved' | 'slowcooker';
@@ -14,7 +15,7 @@ export interface TasteProfile {
 
 export interface Ingredient {
   item: string;
-  amount: number;
+  amount: string;
   unit: string;
   notes?: string;
 }
