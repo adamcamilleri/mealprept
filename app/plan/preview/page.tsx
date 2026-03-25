@@ -122,6 +122,27 @@ export default function PreviewPage() {
           </Link>
         </div>
 
+        {/* Top action bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+          {saved ? (
+            <Link href="/plans">
+              <Button variant="primary" size="sm">View Saved Plans</Button>
+            </Link>
+          ) : (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSavePlan}
+              loading={saving}
+            >
+              {isAuthenticated ? 'Save this plan' : 'Sign in to save'}
+            </Button>
+          )}
+          <Link href="/">
+            <Button variant="secondary" size="sm">Generate another plan</Button>
+          </Link>
+        </div>
+
         {/* Save banner for unauthenticated users */}
         {!isAuthenticated && !saved && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-4">
@@ -139,7 +160,7 @@ export default function PreviewPage() {
 
         <PlanView plan={plan} profile={profile} isPro={false} isAuthenticated={isAuthenticated} />
 
-        {/* Post-plan actions */}
+        {/* Bottom action bar */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           {saved ? (
             <Link href="/plans">

@@ -62,6 +62,7 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
   const [modalItems, setModalItems] = useState<GroceryItemForModal[]>([]);
   const [modalChecked, setModalChecked] = useState<Set<string>>(new Set());
   const [showSuccess, setShowSuccess] = useState(false);
+  const [purchaseOffset, setPurchaseOffset] = useState(0); // days ago
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -152,6 +153,7 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
     setModalChecked(checkedKeys);
     setShowModal(true);
     setShowSuccess(false);
+    setPurchaseOffset(0);
   };
 
   const toggleModalItem = (name: string) => {
@@ -168,7 +170,9 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
 
   const handleAddToFridge = () => {
     const fridgeItems = loadFridgeItems();
-    const today = new Date().toISOString();
+    const purchaseDate = new Date();
+    purchaseDate.setDate(purchaseDate.getDate() - purchaseOffset);
+    const today = purchaseDate.toISOString();
     const newItems: FridgeItem[] = [];
 
     for (const item of modalItems) {
@@ -402,6 +406,33 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
                   );
                 })}
               </ul>
+            </div>
+
+            {/* When did you buy these? */}
+            <div className="px-6 py-4 border-t border-warmgray-100 bg-warmgray-50/50">
+              <p className="text-xs font-semibold text-warmgray-500 uppercase tracking-wider mb-2">
+                When did you buy these?
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { label: 'Today', value: 0 },
+                  { label: 'Yesterday', value: 1 },
+                  { label: '2-3 days ago', value: 2 },
+                  { label: 'This week', value: 5 },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setPurchaseOffset(option.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      purchaseOffset === option.value
+                        ? 'bg-coral-500 text-white'
+                        : 'bg-white border border-warmgray-200 text-warmgray-600 hover:border-warmgray-300'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Modal footer */}
