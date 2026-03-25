@@ -3,6 +3,7 @@ import { generatePlan } from '@/lib/groq';
 import { TasteProfile } from '@/lib/types';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
+import { hasProAccess } from '@/lib/subscription';
 
 const FREE_MONTHLY_LIMIT = 2;
 
@@ -38,11 +39,11 @@ export async function POST(req: NextRequest) {
 
         const { data: subscription } = await serviceClient
           .from('subscriptions')
-          .select('plan_type')
+          .select('plan_type, status, current_period_end')
           .eq('user_id', user.id)
           .single();
 
-        isPro = subscription?.plan_type === 'pro';
+        isPro = hasProAccess(subscription);
 
         if (!isPro) {
           const { data: usageCount } = await serviceClient.rpc(

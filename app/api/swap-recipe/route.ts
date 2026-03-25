@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateSwapRecipe } from '@/lib/groq';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { hasProAccess } from '@/lib/subscription';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,11 +17,11 @@ export async function POST(req: NextRequest) {
     // Check Pro status
     const { data: subscription } = await supabase
       .from('subscriptions')
-      .select('plan_type')
+      .select('plan_type, status, current_period_end')
       .eq('user_id', user.id)
       .single();
 
-    if (subscription?.plan_type !== 'pro') {
+    if (!hasProAccess(subscription)) {
       return NextResponse.json(
         { error: 'Recipe swapping is a Pro feature' },
         { status: 403 }

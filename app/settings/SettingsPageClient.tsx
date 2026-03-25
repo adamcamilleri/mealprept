@@ -5,20 +5,16 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
+import { Subscription, hasProAccess } from '@/lib/subscription';
 
 interface SettingsPageClientProps {
   user: { email: string };
-  subscription: {
-    plan_type: string;
-    status: string;
-    stripe_customer_id?: string;
-    stripe_subscription_id?: string;
-  } | null;
+  subscription: Subscription | null;
 }
 
 export default function SettingsPageClient({
   user,
-  subscription,
+  subscription: initialSubscription,
 }: SettingsPageClientProps) {
   const supabase = createClient();
   const router = useRouter();
@@ -27,20 +23,27 @@ export default function SettingsPageClient({
   const [upgrading, setUpgrading] = useState(false);
   const [managingPortal, setManagingPortal] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState(subscription?.plan_type || 'free');
-  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
-  const [periodEnd, setPeriodEnd] = useState<string | null>(null);
+  const [sub, setSub] = useState<Subscription | null>(initialSubscription);
+
+  const isPro = hasProAccess(sub);
+  const isCanceledWithAccess =
+    sub?.status === 'canceled' &&
+    sub?.plan_type === 'pro' &&
+    sub?.current_period_end &&
+    new Date(sub.current_period_end) > new Date();
 
   const syncSubscription = () => {
     fetch('/api/sync-subscription', { method: 'POST' })
       .then((res) => res.json())
       .then((data) => {
         if (data.plan) {
-          setCurrentPlan(data.plan);
-        }
-        setCancelAtPeriodEnd(!!data.cancelAtPeriodEnd);
-        if (data.currentPeriodEnd) {
-          setPeriodEnd(data.currentPeriodEnd);
+          setSub((prev) => ({
+            plan_type: data.plan,
+            status: data.cancelAtPeriodEnd ? 'canceled' : (prev?.status ?? 'active'),
+            current_period_end: data.currentPeriodEnd ?? prev?.current_period_end ?? null,
+            stripe_customer_id: prev?.stripe_customer_id ?? null,
+            stripe_subscription_id: prev?.stripe_subscription_id ?? null,
+          }));
         }
       })
       .catch(console.error);
@@ -48,7 +51,7 @@ export default function SettingsPageClient({
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
-    if (sessionId && currentPlan !== 'pro') {
+    if (sessionId && !isPro) {
       setVerifying(true);
       fetch('/api/verify-checkout', {
         method: 'POST',
@@ -58,8 +61,13 @@ export default function SettingsPageClient({
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            setCurrentPlan('pro');
-            setCancelAtPeriodEnd(false);
+            setSub((prev) => ({
+              plan_type: 'pro',
+              status: 'active',
+              current_period_end: prev?.current_period_end ?? null,
+              stripe_customer_id: prev?.stripe_customer_id ?? null,
+              stripe_subscription_id: prev?.stripe_subscription_id ?? null,
+            }));
             window.history.replaceState({}, '', '/settings');
           }
         })
@@ -128,6 +136,8 @@ export default function SettingsPageClient({
     }
   };
 
+  const displayPlan = isPro ? 'Pro' : 'Free';
+
   return (
     <div className="max-w-xl mx-auto px-4 py-12 sm:py-16">
       <h1 className="text-2xl font-bold text-warmgray-800 tracking-tight mb-8">
@@ -150,35 +160,35 @@ export default function SettingsPageClient({
           </h2>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-warmgray-800 capitalize">
-                {verifying ? 'Verifying...' : currentPlan}
+              <p className="text-sm font-medium text-warmgray-800">
+                {verifying ? 'Verifying...' : displayPlan}
               </p>
               <p className="text-xs text-warmgray-400 mt-0.5">
-                {currentPlan === 'pro'
+                {isPro
                   ? 'Unlimited plans, swaps, and fridge storage'
                   : '2 plans per month'}
               </p>
-              {cancelAtPeriodEnd && periodEnd && (
+              {isCanceledWithAccess && sub?.current_period_end && (
                 <p className="text-xs text-amber-600 mt-2 bg-amber-50 rounded-lg px-3 py-2">
-                  Your subscription is set to cancel on{' '}
+                  Your Pro plan is canceled. You have access until{' '}
                   <span className="font-semibold">
-                    {new Date(periodEnd).toLocaleDateString('en-US', {
+                    {new Date(sub.current_period_end).toLocaleDateString('en-US', {
                       month: 'long',
                       day: 'numeric',
                       year: 'numeric',
                     })}
                   </span>
-                  . You&apos;ll keep Pro access until then.
+                  .
                 </p>
               )}
             </div>
-            {currentPlan !== 'pro' && (
+            {!isPro && (
               <Button size="sm" onClick={handleUpgrade} loading={upgrading}>
                 Upgrade
               </Button>
             )}
           </div>
-          {subscription?.stripe_customer_id && (
+          {sub?.stripe_customer_id && (
             <button
               onClick={handleManageSubscription}
               disabled={managingPortal}

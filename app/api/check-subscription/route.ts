@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { hasProAccess } from '@/lib/subscription';
 
 export async function GET() {
   try {
@@ -14,13 +15,13 @@ export async function GET() {
 
     const { data: subscription } = await supabase
       .from('subscriptions')
-      .select('plan_type')
+      .select('plan_type, status, current_period_end')
       .eq('user_id', user.id)
       .single();
 
     return NextResponse.json({
       authenticated: true,
-      isPro: subscription?.plan_type === 'pro',
+      isPro: hasProAccess(subscription),
     });
   } catch {
     return NextResponse.json({ authenticated: false, isPro: false });
