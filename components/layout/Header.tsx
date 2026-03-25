@@ -86,7 +86,7 @@ export default function Header() {
                     onClick={() => setShowMenu(!showMenu)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-warmgray-500 hover:text-warmgray-800 hover:bg-warmgray-100/60 transition-all duration-200"
                   >
-                    <div className="w-6 h-6 rounded-full bg-coral-100 flex items-center justify-center text-coral-600 text-xs font-semibold">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-coral-100 to-coral-200 flex items-center justify-center text-coral-700 text-xs font-bold ring-2 ring-coral-100">
                       {(user.email?.[0] ?? '?').toUpperCase()}
                     </div>
                   </button>
@@ -97,7 +97,7 @@ export default function Header() {
                         className="fixed inset-0 z-40"
                         onClick={() => setShowMenu(false)}
                       />
-                      <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-lg border border-warmgray-200/80 py-1 w-48 animate-fadeInScale">
+                      <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg shadow-warmgray-200/40 border border-warmgray-200/80 py-1.5 w-48 animate-fadeInScale">
                         <div className="px-3 py-2 border-b border-warmgray-100">
                           <p className="text-xs text-warmgray-400 truncate">
                             {user.email}
@@ -130,7 +130,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/?signin=true"
-                  className="ml-1 px-3 py-1.5 rounded-lg text-sm font-medium text-coral-600 hover:bg-coral-50 transition-all duration-200"
+                  className="ml-1 px-3.5 py-1.5 rounded-lg text-sm font-semibold text-coral-600 border border-coral-200 hover:bg-coral-50 hover:border-coral-300 transition-all duration-200"
                 >
                   Sign in
                 </Link>

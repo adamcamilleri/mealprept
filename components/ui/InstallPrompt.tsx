@@ -26,6 +26,13 @@ export default function InstallPrompt() {
       return;
     }
 
+    // Only show on mobile devices
+    const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) {
+      setDismissed(true);
+      return;
+    }
+
     // Detect iOS
     const ua = navigator.userAgent;
     const isiOS = /iPad|iPhone|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream;

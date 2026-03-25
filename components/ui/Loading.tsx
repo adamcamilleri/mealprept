@@ -3,55 +3,47 @@
 import { useState, useEffect } from 'react';
 
 const messages = [
-  'Chopping ingredients...',
-  'Taste-testing your plan...',
-  'Marinating the good stuff...',
-  'Firing up the stove...',
-  'Plating your recipes...',
-  'Almost ready to serve...',
+  { text: 'Chopping ingredients...', emoji: '🔪' },
+  { text: 'Taste-testing your plan...', emoji: '👅' },
+  { text: 'Marinating the good stuff...', emoji: '🥘' },
+  { text: 'Firing up the stove...', emoji: '🔥' },
+  { text: 'Plating your recipes...', emoji: '🍽️' },
+  { text: 'Almost ready to serve...', emoji: '🧑‍🍳' },
 ];
 
 export default function Loading() {
   const [messageIndex, setMessageIndex] = useState(0);
+  const [fade, setFade] = useState(true);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % messages.length);
-    }, 2500);
+      setFade(false);
+      setTimeout(() => {
+        setMessageIndex((prev) => (prev + 1) % messages.length);
+        setFade(true);
+      }, 300);
+    }, 2800);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] gap-8">
-      {/* Animated dots */}
-      <div className="flex items-center gap-2">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="w-2.5 h-2.5 rounded-full bg-coral-400"
-            style={{
-              animation: `pulse 1.4s ease-in-out ${i * 0.16}s infinite`,
-            }}
-          />
-        ))}
+      {/* Spinner ring */}
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 rounded-full border-[3px] border-warmgray-100" />
+        <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-coral-500 animate-spin-ring" />
       </div>
 
-      <p className="text-warmgray-500 text-base font-medium transition-opacity duration-300">
-        {messages[messageIndex]}
-      </p>
-
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 80%, 100% {
-            opacity: 0.2;
-            transform: scale(0.8);
-          }
-          40% {
-            opacity: 1;
-            transform: scale(1.1);
-          }
-        }
-      `}</style>
+      <div
+        className={`flex items-center gap-2.5 transition-all duration-300 ${
+          fade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1.5'
+        }`}
+      >
+        <span className="text-xl">{messages[messageIndex].emoji}</span>
+        <p className="text-warmgray-500 text-base font-medium">
+          {messages[messageIndex].text}
+        </p>
+      </div>
     </div>
   );
 }

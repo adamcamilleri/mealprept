@@ -10,14 +10,14 @@ interface QuizStepProps {
 
 export default function QuizStep({ title, subtitle, children }: QuizStepProps) {
   return (
-    <div className="animate-fadeIn">
-      <h2 className="text-xl sm:text-2xl font-semibold text-warmgray-800 tracking-tight mb-1.5">
+    <div className="animate-stepFade">
+      <h2 className="text-2xl sm:text-3xl font-bold text-warmgray-800 tracking-tight mb-2">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-warmgray-400 text-sm mb-5">{subtitle}</p>
+        <p className="text-warmgray-400 text-sm mb-6">{subtitle}</p>
       )}
-      {!subtitle && <div className="mb-5" />}
+      {!subtitle && <div className="mb-6" />}
       {children}
     </div>
   );

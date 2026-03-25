@@ -97,6 +97,81 @@
     animation: shimmer 1.5s ease-in-out infinite;
   }
 
+  /* Step fade transition for quiz steps */
+  @keyframes stepFade {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-stepFade {
+    animation: stepFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Subtle bounce for down arrow */
+  @keyframes bounceSubtle {
+    0%, 100% {
+      transform: translateY(0);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translateY(6px);
+      opacity: 1;
+    }
+  }
+
+  .animate-bounce-subtle {
+    animation: bounceSubtle 2.5s ease-in-out infinite;
+  }
+
+  /* Text gradient for hero heading */
+  .text-gradient {
+    background: linear-gradient(135deg, theme('colors.coral.400'), theme('colors.coral.600'));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Spinner ring for loading */
+  @keyframes spinRing {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-ring {
+    animation: spinRing 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+
+  /* Fade-swap for loading messages */
+  @keyframes fadeSwap {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    15% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    85% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  .animate-fadeSwap {
+    animation: fadeSwap 2.5s ease-in-out;
+  }
+
   /* Glass effect for header */
   .glass {
     backdrop-filter: blur(16px) saturate(180%);

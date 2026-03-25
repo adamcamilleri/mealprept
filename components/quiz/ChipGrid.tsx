@@ -36,12 +36,11 @@ export default function ChipGrid({
             className={`
               group relative p-3.5 rounded-xl border text-left
               transition-all duration-200 ease-out
-              min-h-[56px] flex items-center gap-2.5
-              active:scale-[0.97]
+              min-h-[60px] flex items-center gap-2.5
               ${
                 isSelected
-                  ? 'border-coral-400 bg-coral-50/80 shadow-[0_0_0_1px_theme(colors.coral.400)]'
-                  : 'border-warmgray-200/80 bg-white hover:border-warmgray-300 hover:shadow-sm'
+                  ? 'border-coral-400 bg-gradient-to-br from-coral-50 to-coral-100/60 shadow-[0_0_0_1px_theme(colors.coral.400)] scale-[1.02]'
+                  : 'border-warmgray-200/80 bg-white hover:border-warmgray-300 hover:shadow-sm active:scale-[0.97]'
               }
             `}
           >
@@ -59,13 +58,17 @@ export default function ChipGrid({
             </span>
 
             {/* Selection indicator */}
-            {isSelected && (
-              <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-coral-500 flex items-center justify-center">
-                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </span>
-            )}
+            <span
+              className={`
+                absolute top-2 right-2 w-4.5 h-4.5 rounded-full bg-coral-500 flex items-center justify-center
+                transition-transform duration-200 ease-out
+                ${isSelected ? 'scale-100' : 'scale-0'}
+              `}
+            >
+              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
           </button>
         );
       })}
