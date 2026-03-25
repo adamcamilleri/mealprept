@@ -19,10 +19,6 @@ function HomeContent() {
     <div className="max-w-3xl mx-auto px-6 py-16 sm:py-24">
       {/* Hero */}
       <div className="text-center mb-16 animate-fadeIn">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-coral-50 text-coral-600 text-xs font-semibold tracking-wide mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-coral-500 animate-pulse" />
-          Free to use &middot; No account needed
-        </div>
         <h1 className="text-4xl sm:text-6xl font-extrabold text-warmgray-800 tracking-tight leading-[1.05] mb-6">
           What&apos;s for dinner?
           <br />
