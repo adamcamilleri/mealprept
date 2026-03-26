@@ -13,34 +13,7 @@ import {
 import Button from '@/components/ui/Button';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 
-const STORAGE_KEY = 'nochef-fridge';
 const FREE_ITEM_LIMIT = 40;
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
-function loadItems(): FridgeItem[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as FridgeItem[];
-    return parsed.map((item) => {
-      if (!item.storage) {
-        const shelfInfo = getShelfLife(item.name);
-        return { ...item, storage: shelfInfo?.storage ?? 'fridge' };
-      }
-      return item;
-    });
-  } catch {
-    return [];
-  }
-}
-
-function saveItems(items: FridgeItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-}
 
 const STATUS_CONFIG = {
   expired: {
@@ -106,6 +79,15 @@ interface FridgePageClientProps {
   isPro: boolean;
 }
 
+async function fetchFridgeItems(): Promise<FridgeItem[]> {
+  const res = await fetch('/api/fridge');
+  if (!res.ok) {
+    if (res.status === 401) return [];
+    throw new Error('Failed to fetch fridge items');
+  }
+  return res.json();
+}
+
 export default function FridgePageClient({ isPro }: FridgePageClientProps) {
   const [items, setItems] = useState<FridgeItem[]>([]);
   const [activeTab, setActiveTab] = useState<StorageLocation>('fridge');
@@ -115,6 +97,8 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customShelfLife, setCustomShelfLife] = useState('7');
   const [customCategory, setCustomCategory] = useState<FridgeItem['category']>('other');
@@ -126,15 +110,17 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
   const atLimit = !isPro && items.length >= FREE_ITEM_LIMIT;
 
   useEffect(() => {
-    setItems(loadItems());
     setMounted(true);
+    fetchFridgeItems()
+      .then((data) => {
+        setItems(data);
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+      })
+      .finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    if (mounted && items.length >= 0) {
-      saveItems(items);
-    }
-  }, [items, mounted]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -168,13 +154,12 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
   };
 
   const addItem = useCallback(
-    (name: string) => {
+    async (name: string) => {
       if (!name.trim()) return;
       if (atLimit) return;
       const shelfInfo = getShelfLife(name);
       const storage = addItemStorage ?? shelfInfo?.storage ?? activeTab;
-      const newItem: FridgeItem = {
-        id: generateId(),
+      const payload = {
         name: name.trim(),
         category: shelfInfo?.category ?? 'other',
         addedDate: new Date().toISOString(),
@@ -182,22 +167,35 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
         quantity: quantity.trim() || undefined,
         storage,
       };
-      setItems((prev) => [newItem, ...prev]);
+
       setInputValue('');
       setQuantity('');
       setSuggestions([]);
       setShowSuggestions(false);
       setAddItemStorage(null);
       inputRef.current?.focus();
+
+      try {
+        const res = await fetch('/api/fridge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const saved = await res.json();
+          setItems((prev) => [saved, ...prev]);
+        }
+      } catch {
+        // Silently fail - item won't appear
+      }
     },
     [quantity, addItemStorage, activeTab, atLimit]
   );
 
-  const addCustomItem = () => {
+  const addCustomItem = async () => {
     if (!inputValue.trim()) return;
     if (atLimit) return;
-    const newItem: FridgeItem = {
-      id: generateId(),
+    const payload = {
       name: inputValue.trim(),
       category: customCategory,
       addedDate: new Date().toISOString(),
@@ -205,7 +203,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
       quantity: quantity.trim() || undefined,
       storage: customStorage,
     };
-    setItems((prev) => [newItem, ...prev]);
+
     setInputValue('');
     setQuantity('');
     setCustomShelfLife('7');
@@ -214,23 +212,52 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
     setShowCustomForm(false);
     setAddItemStorage(null);
     inputRef.current?.focus();
+
+    try {
+      const res = await fetch('/api/fridge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setItems((prev) => [saved, ...prev]);
+      }
+    } catch {
+      // Silently fail
+    }
   };
 
-  const removeItem = (id: string) => {
+  const removeItem = async (id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
+    try {
+      await fetch(`/api/fridge?id=${id}`, { method: 'DELETE' });
+    } catch {
+      // Optimistic delete - if API fails, item is already removed from UI
+    }
   };
 
-  const moveItem = (id: string) => {
+  const moveItem = async (id: string) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    const newStorage = item.storage === 'fridge' ? 'pantry' : 'fridge';
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, storage: item.storage === 'fridge' ? 'pantry' : 'fridge' }
-          : item
+      prev.map((i) =>
+        i.id === id ? { ...i, storage: newStorage as StorageLocation } : i
       )
     );
+    try {
+      await fetch('/api/fridge', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, storage: newStorage }),
+      });
+    } catch {
+      // Optimistic update - revert not implemented for simplicity
+    }
   };
 
-  const clearExpired = () => {
+  const clearExpired = async () => {
     setItems((prev) =>
       prev.filter((item) => {
         if (item.storage !== activeTab) return true;
@@ -238,6 +265,11 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
         return getFreshnessStatus(remaining) !== 'expired';
       })
     );
+    try {
+      await fetch('/api/fridge?expired=true', { method: 'DELETE' });
+    } catch {
+      // Optimistic delete
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -293,7 +325,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
   const pantryCount = items.filter((i) => i.storage === 'pantry').length;
   const tabConfig = TAB_CONFIG[activeTab];
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-cream">
         <div className="max-w-2xl mx-auto px-4 py-12">
@@ -301,6 +333,30 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
             <div className="h-8 bg-warmgray-200 rounded w-48" />
             <div className="h-12 bg-warmgray-100 rounded-xl" />
             <div className="h-32 bg-warmgray-100 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-cream">
+        <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+          <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-8 sm:p-12">
+            <div className="text-4xl mb-4">🧊</div>
+            <h2 className="text-xl font-bold text-warmgray-800 mb-2">
+              Sign in to use your Fridge
+            </h2>
+            <p className="text-warmgray-500 text-sm mb-6">
+              Track your ingredients, monitor freshness, and reduce food waste.
+            </p>
+            <a
+              href="/?signin=true"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-navy-500 text-white rounded-full text-sm font-semibold hover:bg-navy-600 transition-colors"
+            >
+              Sign in to get started
+            </a>
           </div>
         </div>
       </div>

@@ -2,30 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { GroceryCategory } from '@/lib/types';
-import { FridgeItem, getShelfLife, StorageLocation } from '@/lib/fridge-data';
+import { FridgeItem, getShelfLife } from '@/lib/fridge-data';
 import Link from 'next/link';
 import Button from '../ui/Button';
-
-const FRIDGE_STORAGE_KEY = 'nochef-fridge';
 
 interface GroceryListProps {
   groceryList: GroceryCategory[];
   isAuthenticated?: boolean;
 }
 
-function loadFridgeItems(): FridgeItem[] {
+async function fetchFridgeItems(): Promise<FridgeItem[]> {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(FRIDGE_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as FridgeItem[];
-    return parsed.map((item) => {
-      if (!item.storage) {
-        const shelfInfo = getShelfLife(item.name);
-        return { ...item, storage: (shelfInfo?.storage ?? 'fridge') as StorageLocation };
-      }
-      return item;
-    });
+    const res = await fetch('/api/fridge');
+    if (!res.ok) return [];
+    return res.json();
   } catch {
     return [];
   }
@@ -50,30 +41,33 @@ function fuzzyMatchFridge(groceryItemName: string, fridgeItems: FridgeItem[]): F
 export default function GroceryList({ groceryList, isAuthenticated = false }: GroceryListProps) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [fridgeMatches, setFridgeMatches] = useState<Set<string>>(new Set());
+  const [cachedFridgeItems, setCachedFridgeItems] = useState<FridgeItem[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const items = loadFridgeItems();
+    fetchFridgeItems().then((items) => {
+      setCachedFridgeItems(items);
 
-    const matches = new Set<string>();
-    const preChecked = new Set<string>();
-    for (const category of groceryList) {
-      for (const item of category.items) {
-        const itemKey = `${category.category}-${item.item}`;
-        const match = fuzzyMatchFridge(item.item, items);
-        if (match) {
-          matches.add(itemKey);
-          preChecked.add(itemKey);
+      const matches = new Set<string>();
+      const preChecked = new Set<string>();
+      for (const category of groceryList) {
+        for (const item of category.items) {
+          const itemKey = `${category.category}-${item.item}`;
+          const match = fuzzyMatchFridge(item.item, items);
+          if (match) {
+            matches.add(itemKey);
+            preChecked.add(itemKey);
+          }
         }
       }
-    }
-    setFridgeMatches(matches);
-    setChecked((prev) => {
-      const next = new Set(prev);
-      preChecked.forEach((k) => next.add(k));
-      return next;
+      setFridgeMatches(matches);
+      setChecked((prev) => {
+        const next = new Set(prev);
+        preChecked.forEach((k) => next.add(k));
+        return next;
+      });
     });
   }, [groceryList]);
 
@@ -129,20 +123,26 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
     return 6 - today; // days until Saturday
   };
 
-  const handleScheduleShopping = (daysFromNow: number) => {
-    const fridgeItems = loadFridgeItems();
+  const handleScheduleShopping = async (daysFromNow: number) => {
     const shoppingDate = new Date();
     shoppingDate.setDate(shoppingDate.getDate() + daysFromNow);
     const dateStr = shoppingDate.toISOString();
-    const newItems: FridgeItem[] = [];
+
+    const newItems: Array<{
+      name: string;
+      category: string;
+      addedDate: string;
+      shelfLifeDays: number;
+      quantity: string;
+      storage: string;
+    }> = [];
 
     for (const category of groceryList) {
       for (const item of category.items) {
-        if (fuzzyMatchFridge(item.item, fridgeItems)) continue;
+        if (fuzzyMatchFridge(item.item, cachedFridgeItems)) continue;
 
         const shelfInfo = getShelfLife(item.item);
         newItems.push({
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
           name: item.item,
           category: shelfInfo?.category ?? 'other',
           addedDate: dateStr,
@@ -154,14 +154,27 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
     }
 
     if (newItems.length > 0) {
-      const updated = [...newItems, ...fridgeItems];
-      localStorage.setItem(FRIDGE_STORAGE_KEY, JSON.stringify(updated));
+      try {
+        const res = await fetch('/api/fridge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newItems),
+        });
+        if (res.ok) {
+          const saved: FridgeItem[] = await res.json();
+          setCachedFridgeItems((prev) => [...saved, ...prev]);
+        }
+      } catch {
+        // Silently fail
+      }
     }
 
     setShowDatePicker(false);
     setShowSuccess(true);
 
-    const updatedFridge = loadFridgeItems();
+    // Re-fetch to update fridge matches
+    const updatedFridge = await fetchFridgeItems();
+    setCachedFridgeItems(updatedFridge);
     const matches = new Set<string>();
     for (const category of groceryList) {
       for (const gi of category.items) {

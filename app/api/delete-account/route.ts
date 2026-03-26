@@ -17,6 +17,7 @@ export async function POST() {
     );
 
     // Delete all user data (order matters for foreign keys)
+    await adminSupabase.from('fridge_items').delete().eq('user_id', user.id);
     await adminSupabase.from('usage').delete().eq('user_id', user.id);
     await adminSupabase.from('meal_plans').delete().eq('user_id', user.id);
     await adminSupabase.from('taste_profiles').delete().eq('user_id', user.id);

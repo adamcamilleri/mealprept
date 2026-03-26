@@ -36,6 +36,10 @@ export async function GET(request: Request) {
       }
 
       // Successful auth - redirect to intended destination
+      // For password recovery, redirect to the reset-password page
+      if (next === '/reset-password') {
+        return NextResponse.redirect(`${origin}/reset-password`);
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
     console.error('Auth callback error:', error?.message);

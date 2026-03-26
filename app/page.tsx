@@ -47,27 +47,6 @@ const SAMPLE_RECIPES = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote:
-      'I used to spend 30 minutes just deciding what to cook. Now I open the app Sunday morning and my whole week is planned.',
-    name: 'Sarah M.',
-    context: 'Mom of 2',
-  },
-  {
-    quote:
-      'The grocery list alone saves me so much time. Everything is combined and organized. I actually look forward to meal prep now.',
-    name: 'James K.',
-    context: 'Works from home',
-  },
-  {
-    quote:
-      'Finally something that gives me actual good recipes, not just "chicken and rice" over and over. The Korean chicken bowl was incredible.',
-    name: 'Priya T.',
-    context: 'Foodie on a budget',
-  },
-];
-
 function HomeContent() {
   const searchParams = useSearchParams();
   const [showAuth, setShowAuth] = useState(false);
@@ -264,31 +243,12 @@ function HomeContent() {
         </a>
       </section>
 
-      {/* Section 5: Social Proof */}
-      <section className="px-6 py-16 sm:py-24">
-        <div className="text-center mb-12">
-          <span className="text-xs font-semibold text-coral-500 uppercase tracking-widest">
-            What People Say
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-warmgray-800 mt-3">
-            Real cooks, real plans
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {TESTIMONIALS.map((t) => (
-            <div
-              key={t.name}
-              className="bg-white rounded-2xl border-2 border-navy-500 p-6"
-            >
-              <p className="text-sm text-warmgray-600 leading-relaxed mb-4">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-              <div>
-                <p className="text-sm font-semibold text-warmgray-800">{t.name}</p>
-                <p className="text-xs text-warmgray-400">{t.context}</p>
-              </div>
-            </div>
-          ))}
+      {/* Section 5: About */}
+      <section className="px-6 py-16 sm:py-24 text-center">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-warmgray-400 text-sm">
+            Built by a home cook who got tired of the same five dinners every week.
+          </p>
         </div>
       </section>
 
