@@ -39,8 +39,8 @@ export default function ChipGrid({
               min-h-[64px] flex items-center gap-3
               ${
                 isSelected
-                  ? 'bg-coral-500 shadow-[0_2px_12px_rgba(232,108,58,0.25)] scale-[1.02]'
-                  : 'bg-white shadow-[0_1px_3px_rgba(50,48,47,0.06)] hover:shadow-[0_2px_8px_rgba(50,48,47,0.1)] active:scale-[0.97]'
+                  ? 'bg-navy-500 shadow-[0_2px_12px_rgba(27,54,93,0.25)] scale-[1.02]'
+                  : 'bg-white border border-warmgray-200 hover:border-warmgray-300 hover:shadow-[0_2px_8px_rgba(50,48,47,0.08)] active:scale-[0.97]'
               }
             `}
           >
@@ -62,7 +62,7 @@ export default function ChipGrid({
               className={`
                 absolute top-2.5 right-2.5 w-4.5 h-4.5 rounded-full flex items-center justify-center
                 transition-transform duration-200 ease-out
-                ${isSelected ? 'scale-100 bg-white/25' : 'scale-0 bg-coral-500'}
+                ${isSelected ? 'scale-100 bg-white/25' : 'scale-0 bg-navy-500'}
               `}
             >
               <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>

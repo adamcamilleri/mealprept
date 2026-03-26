@@ -71,7 +71,7 @@ export default function Header() {
               user ? (
                 <Link
                   href="/settings"
-                  className="w-9 h-9 rounded-full bg-gradient-to-br from-coral-100 to-coral-200 flex items-center justify-center text-coral-700 text-sm font-bold ring-2 ring-coral-100 hover:ring-coral-300 transition-all"
+                  className="w-9 h-9 rounded-full bg-gradient-to-br from-navy-100 to-navy-200 flex items-center justify-center text-navy-700 text-sm font-bold ring-2 ring-navy-100 hover:ring-navy-300 transition-all"
                 >
                   {(user.email?.[0] ?? '?').toUpperCase()}
                 </Link>
@@ -114,7 +114,7 @@ export default function Header() {
           {/* User info */}
           {user && (
             <div className="mb-8 pb-6 border-b border-warmgray-100">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-coral-100 to-coral-200 flex items-center justify-center text-coral-700 text-lg font-bold mb-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-navy-100 to-navy-200 flex items-center justify-center text-navy-700 text-lg font-bold mb-3">
                 {(user.email?.[0] ?? '?').toUpperCase()}
               </div>
               <p className="text-sm font-medium text-warmgray-800 truncate">

@@ -11,7 +11,7 @@
 
   /* Better default focus ring */
   *:focus-visible {
-    @apply outline-none ring-2 ring-coral-400/50 ring-offset-2 ring-offset-cream;
+    @apply outline-none ring-2 ring-navy-400/50 ring-offset-2 ring-offset-cream;
   }
 
   /* Smooth scrolling */
@@ -132,6 +132,7 @@
   /* Text gradient for hero heading */
   .text-gradient {
     background: linear-gradient(135deg, theme('colors.coral.400'), theme('colors.coral.600'));
+    /* coral is now gold - gradient stays as accent */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -171,6 +172,10 @@
   .animate-fadeSwap {
     animation: fadeSwap 2.5s ease-in-out;
   }
+
+  /* Hide scrollbar */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
   /* Glass effect for header */
   .glass {

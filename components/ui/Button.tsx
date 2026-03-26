@@ -19,11 +19,11 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-400/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] hover:-translate-y-0.5';
+    'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-400/50 focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] hover:-translate-y-0.5';
 
   const variants = {
     primary:
-      'bg-coral-500 text-white hover:bg-coral-600 active:bg-coral-700',
+      'bg-navy-500 text-white hover:bg-navy-600 active:bg-navy-700',
     secondary:
       'bg-white text-warmgray-700 border border-warmgray-200 hover:border-warmgray-300 hover:bg-warmgray-50',
     ghost:

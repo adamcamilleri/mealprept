@@ -5,7 +5,7 @@ export interface TasteProfile {
   mealType?: 'breakfast' | 'lunch' | 'dinner' | 'mix';
   proteins: string[];
   favoriteDishes?: string;
-  effortLevel: 'quick' | 'medium' | 'involved' | 'slowcooker';
+  effortLevel: 'quick' | 'medium' | 'involved' | 'slowcooker' | '';
   leastFavorites?: string;
   mealStyles?: string[];
   hardNos: string[];

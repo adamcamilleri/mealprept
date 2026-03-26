@@ -74,7 +74,25 @@ const SERVINGS = [
 
 const TOTAL_STEPS = 7;
 
-export default function Quiz() {
+const EFFORT_LABELS: Record<string, string> = {
+  quick: '15 min max',
+  medium: '30 min',
+  involved: 'Up to an hour',
+  slowcooker: 'Slow cooker',
+};
+
+const MEAL_TYPE_LABELS: Record<string, string> = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+  mix: 'Mix it up',
+};
+
+interface QuizProps {
+  darkMode?: boolean;
+}
+
+export default function Quiz({ darkMode = false }: QuizProps) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -209,6 +227,8 @@ export default function Quiz() {
     return <Loading />;
   }
 
+  const mutedColor = darkMode ? 'text-navy-200' : 'text-warmgray-400';
+
   const steps = [
     // Step 0: Meal type
     <QuizStep key={0} title="What meal are you planning?" subtitle="Pick one">
@@ -252,7 +272,7 @@ export default function Quiz() {
     <QuizStep key={4} title="Allergies or ingredients to avoid?" subtitle="Optional - skip if you eat everything">
       <div className="space-y-6">
         <div>
-          <p className="text-sm font-medium text-warmgray-500 mb-3">Common allergies</p>
+          <p className={`text-sm font-medium ${mutedColor} mb-3`}>Common allergies</p>
           <ChipGrid
             options={ALLERGIES}
             selected={profile.hardNos.length === 0 ? [] : profile.hardNos}
@@ -260,7 +280,7 @@ export default function Quiz() {
           />
         </div>
         <div>
-          <p className="text-sm font-medium text-warmgray-500 mb-3">Anything else you hate?</p>
+          <p className={`text-sm font-medium ${mutedColor} mb-3`}>Anything else you hate?</p>
           <textarea
             value={hardNosText}
             onChange={(e) => {
@@ -271,7 +291,11 @@ export default function Quiz() {
               }
             }}
             placeholder="e.g. mushrooms, olives, cilantro, eggplant, liver..."
-            className="w-full p-4 rounded-2xl border-2 border-warmgray-200 focus:border-coral-400 focus:outline-none text-warmgray-800 min-h-[80px] resize-none bg-white text-sm"
+            className={`w-full p-4 rounded-2xl border-2 focus:outline-none min-h-[80px] resize-none text-sm ${
+              darkMode
+                ? 'border-navy-400/30 focus:border-coral-400 text-white bg-navy-400/20 placeholder-navy-300'
+                : 'border-warmgray-200 focus:border-navy-400 text-warmgray-800 bg-white'
+            }`}
             rows={3}
           />
         </div>
@@ -299,52 +323,89 @@ export default function Quiz() {
     </QuizStep>,
   ];
 
+  const sidebarItems = [
+    { label: 'Meal', value: profile.mealType ? MEAL_TYPE_LABELS[profile.mealType] || profile.mealType : null },
+    { label: 'Cuisines', value: profile.cuisines.length > 0 ? profile.cuisines.join(', ') : null },
+    { label: 'Proteins', value: profile.proteins.length > 0 ? profile.proteins.join(', ') : null },
+    { label: 'Effort', value: profile.effortLevel ? EFFORT_LABELS[profile.effortLevel] || profile.effortLevel : null },
+    { label: 'Avoid', value: (() => {
+      const items = [...profile.hardNos.filter(v => v !== 'none'), ...hardNosText.split(',').map(s => s.trim()).filter(Boolean)];
+      return items.length > 0 ? items.join(', ') : null;
+    })() },
+    { label: 'Days', value: profile.prepDays > 0 ? `${profile.prepDays} days` : null },
+    { label: 'Servings', value: profile.servings > 0 ? `${profile.servings} per meal` : null },
+  ];
+
+  // Only show picks for steps already passed
+  const picksByStep = [
+    sidebarItems[0], // step 0: meal type
+    sidebarItems[1], // step 1: cuisines
+    sidebarItems[2], // step 2: proteins
+    sidebarItems[3], // step 3: effort
+    sidebarItems[4], // step 4: avoid
+    sidebarItems[5], // step 5: days
+    sidebarItems[6], // step 6: servings
+  ];
+  const filledPicks = picksByStep.slice(0, step).filter(item => item.value);
+
   return (
-    <>
-      <div className="max-w-2xl mx-auto">
-        {/* Progress bar */}
-        <div className="mb-10">
-          <div className="flex justify-between text-sm text-warmgray-400 mb-3">
-            <span className="font-medium">Step {step + 1} of {TOTAL_STEPS}</span>
-          </div>
-          <div className="w-full h-1.5 bg-warmgray-800/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-coral-500 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
-            />
-          </div>
+    <div className="max-w-2xl mx-auto">
+      {/* Progress bar */}
+      <div className="mb-10">
+        <div className="flex justify-between text-sm text-warmgray-400 mb-3">
+          <span className="font-medium">Step {step + 1} of {TOTAL_STEPS}</span>
         </div>
-
-        {/* Current step */}
-        <div key={step} className="animate-stepFade">
-          {steps[step]}
-        </div>
-
-        {/* Error display */}
-        {error && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 animate-fadeIn">
-            {error}
-          </div>
-        )}
-
-        {/* Navigation */}
-        <div className="flex justify-between mt-8">
-          {step > 0 ? (
-            <Button variant="ghost" onClick={() => setStep((prev) => prev - 1)}>
-              Back
-            </Button>
-          ) : (
-            <div />
-          )}
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            size="lg"
-          >
-            {step === TOTAL_STEPS - 1 ? 'Generate my plan ✨' : 'Next'}
-          </Button>
+        <div className="w-full h-1.5 bg-warmgray-800/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-navy-500 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
+          />
         </div>
       </div>
-    </>
+
+      {/* Your picks - compact horizontal bar */}
+      {filledPicks.length > 0 && (
+        <div className="mb-8 flex flex-wrap gap-2">
+          {filledPicks.map((item) => (
+            <span
+              key={item.label}
+              className="inline-flex items-center gap-1.5 text-xs bg-navy-50 text-navy-500 px-3 py-1.5 rounded-full font-medium"
+            >
+              <span className="text-navy-300">{item.label}:</span> {item.value}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Current step */}
+      <div key={step} className="animate-stepFade">
+        {steps[step]}
+      </div>
+
+      {/* Error display */}
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 animate-fadeIn">
+          {error}
+        </div>
+      )}
+
+      {/* Navigation */}
+      <div className="flex justify-between mt-8">
+        {step > 0 ? (
+          <Button variant="ghost" onClick={() => setStep((prev) => prev - 1)}>
+            Back
+          </Button>
+        ) : (
+          <div />
+        )}
+        <Button
+          onClick={handleNext}
+          disabled={!canProceed()}
+          size="lg"
+        >
+          {step === TOTAL_STEPS - 1 ? 'Generate my plan ✨' : 'Next'}
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -47,22 +47,11 @@ function fuzzyMatchFridge(groceryItemName: string, fridgeItems: FridgeItem[]): F
   return null;
 }
 
-interface GroceryItemForModal {
-  name: string;
-  amount: string;
-  category: string;
-  alreadyInFridge: boolean;
-  storage: StorageLocation;
-}
-
 export default function GroceryList({ groceryList, isAuthenticated = false }: GroceryListProps) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [fridgeMatches, setFridgeMatches] = useState<Set<string>>(new Set());
-  const [showModal, setShowModal] = useState(false);
-  const [modalItems, setModalItems] = useState<GroceryItemForModal[]>([]);
-  const [modalChecked, setModalChecked] = useState<Set<string>>(new Set());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [purchaseOffset, setPurchaseOffset] = useState(0); // days ago
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -125,71 +114,43 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
     }
   };
 
-  const openAddToFridgeModal = () => {
+  const getDateLabel = (daysFromNow: number): string => {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromNow);
+    if (daysFromNow === 0) return 'Today';
+    if (daysFromNow === 1) return 'Tomorrow';
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  };
+
+  const getNextWeekendDay = (): number => {
+    const today = new Date().getDay(); // 0=Sun, 6=Sat
+    if (today === 6) return 0; // Saturday -> today
+    if (today === 0) return 0; // Sunday -> today
+    return 6 - today; // days until Saturday
+  };
+
+  const handleScheduleShopping = (daysFromNow: number) => {
     const fridgeItems = loadFridgeItems();
-    const items: GroceryItemForModal[] = [];
-    const checkedKeys = new Set<string>();
+    const shoppingDate = new Date();
+    shoppingDate.setDate(shoppingDate.getDate() + daysFromNow);
+    const dateStr = shoppingDate.toISOString();
+    const newItems: FridgeItem[] = [];
 
     for (const category of groceryList) {
       for (const item of category.items) {
-        const alreadyInFridge = !!fuzzyMatchFridge(item.item, fridgeItems);
+        if (fuzzyMatchFridge(item.item, fridgeItems)) continue;
+
         const shelfInfo = getShelfLife(item.item);
-        const modalItem: GroceryItemForModal = {
+        newItems.push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
           name: item.item,
-          amount: item.amount,
-          category: category.category,
-          alreadyInFridge,
+          category: shelfInfo?.category ?? 'other',
+          addedDate: dateStr,
+          shelfLifeDays: shelfInfo?.days ?? 7,
+          quantity: item.amount,
           storage: shelfInfo?.storage ?? 'fridge',
-        };
-        items.push(modalItem);
-        // Pre-check items NOT already in the fridge
-        if (!alreadyInFridge) {
-          checkedKeys.add(item.item);
-        }
+        });
       }
-    }
-
-    setModalItems(items);
-    setModalChecked(checkedKeys);
-    setShowModal(true);
-    setShowSuccess(false);
-    setPurchaseOffset(0);
-  };
-
-  const toggleModalItem = (name: string) => {
-    setModalChecked((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
-      } else {
-        next.add(name);
-      }
-      return next;
-    });
-  };
-
-  const handleAddToFridge = () => {
-    const fridgeItems = loadFridgeItems();
-    const purchaseDate = new Date();
-    purchaseDate.setDate(purchaseDate.getDate() - purchaseOffset);
-    const today = purchaseDate.toISOString();
-    const newItems: FridgeItem[] = [];
-
-    for (const item of modalItems) {
-      if (!modalChecked.has(item.name)) continue;
-      if (item.alreadyInFridge) continue;
-
-      const shelfInfo = getShelfLife(item.name);
-      const newItem: FridgeItem = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-        name: item.name,
-        category: shelfInfo?.category ?? 'other',
-        addedDate: today,
-        shelfLifeDays: shelfInfo?.days ?? 7,
-        quantity: item.amount,
-        storage: item.storage,
-      };
-      newItems.push(newItem);
     }
 
     if (newItems.length > 0) {
@@ -197,10 +158,9 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
       localStorage.setItem(FRIDGE_STORAGE_KEY, JSON.stringify(updated));
     }
 
-    setShowModal(false);
+    setShowDatePicker(false);
     setShowSuccess(true);
 
-    // Refresh fridge matches
     const updatedFridge = loadFridgeItems();
     const matches = new Set<string>();
     for (const category of groceryList) {
@@ -213,7 +173,6 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
     }
     setFridgeMatches(matches);
 
-    // Hide success after 5 seconds
     setTimeout(() => setShowSuccess(false), 5000);
   };
 
@@ -253,7 +212,7 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
                             inFridge
                               ? 'bg-green-500 border-green-500 text-white'
                               : isChecked
-                                ? 'bg-coral-500 border-coral-500 text-white'
+                                ? 'bg-navy-500 border-navy-500 text-white'
                                 : 'border-warmgray-300'
                           }
                         `}
@@ -301,155 +260,71 @@ export default function GroceryList({ groceryList, isAuthenticated = false }: Gr
               </span>
             </Link>
           ) : showSuccess ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-navy-50 border border-navy-100 rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-5 h-5 text-navy-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-sm font-medium text-green-700">
-                  Items added to your fridge & pantry!
+                <span className="text-sm font-medium text-navy-700">
+                  Items scheduled for your fridge!
                 </span>
               </div>
               <Link
                 href="/fridge"
-                className="text-sm font-semibold text-green-700 hover:text-green-800 underline underline-offset-2"
+                className="text-sm font-semibold text-navy-600 hover:text-navy-700 underline underline-offset-2"
               >
-                View Fridge & Pantry
+                View Fridge
               </Link>
             </div>
-          ) : (
-            <button
-              onClick={openAddToFridgeModal}
-              className="w-full bg-coral-50 hover:bg-coral-100 rounded-2xl p-4 flex items-center justify-center gap-2 transition-colors"
-            >
-              <span className="text-lg">🧊</span>
-              <span className="text-sm font-semibold text-coral-700">
-                Done shopping? Add these to My Fridge
-              </span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Add to Fridge Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowModal(false)}
-          />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
-            {/* Modal header */}
-            <div className="p-6 border-b border-warmgray-100">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-warmgray-800">
-                  Add to Fridge & Pantry
-                </h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="p-1.5 rounded-lg text-warmgray-400 hover:text-warmgray-600 hover:bg-warmgray-100 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <p className="text-sm text-warmgray-500 mt-1">
-                Uncheck anything you didn&apos;t buy.
+          ) : showDatePicker ? (
+            <div className="bg-warmgray-50 rounded-2xl p-5">
+              <p className="text-sm font-semibold text-warmgray-700 mb-1">
+                When are you shopping?
               </p>
-            </div>
-
-            {/* Modal body */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <ul className="space-y-3">
-                {modalItems.map((item) => {
-                  const isChecked = modalChecked.has(item.name);
-                  return (
-                    <li key={`${item.category}-${item.name}`} className="flex items-center gap-3">
-                      <button
-                        onClick={() => {
-                          if (!item.alreadyInFridge) toggleModalItem(item.name);
-                        }}
-                        disabled={item.alreadyInFridge}
-                        className={`
-                          w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors
-                          ${
-                            item.alreadyInFridge
-                              ? 'bg-warmgray-100 border-warmgray-200 cursor-not-allowed'
-                              : isChecked
-                                ? 'bg-coral-500 border-coral-500 text-white'
-                                : 'border-warmgray-300 hover:border-coral-400'
-                          }
-                        `}
-                      >
-                        {(isChecked || item.alreadyInFridge) && (
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <span className={`text-sm font-medium ${item.alreadyInFridge ? 'text-warmgray-400' : 'text-warmgray-700'}`}>
-                          {item.amount} {item.name}
-                        </span>
-                        {item.alreadyInFridge ? (
-                          <span className="ml-2 text-xs text-green-600 font-medium">
-                            Already in fridge
-                          </span>
-                        ) : (
-                          <span className="ml-2 text-xs text-warmgray-400" title={item.storage === 'pantry' ? 'Goes to pantry' : 'Goes to fridge'}>
-                            {item.storage === 'pantry' ? '🫙' : '🧊'}
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-
-            {/* When did you buy these? */}
-            <div className="px-6 py-4 border-t border-warmgray-100 bg-warmgray-50/50">
-              <p className="text-xs font-semibold text-warmgray-500 uppercase tracking-wider mb-2">
-                When did you buy these?
-              </p>
-              <div className="flex gap-2 flex-wrap">
+              {fridgeMatches.size > 0 && (
+                <p className="text-xs text-warmgray-400 mb-3">
+                  Items already in your fridge will be skipped automatically.
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
                 {[
-                  { label: 'Today', value: 0 },
-                  { label: 'Yesterday', value: 1 },
-                  { label: '2-3 days ago', value: 2 },
-                  { label: 'This week', value: 5 },
-                ].map((option) => (
+                  { label: 'Today', days: 0 },
+                  { label: 'Tomorrow', days: 1 },
+                  { label: getDateLabel(getNextWeekendDay()), days: getNextWeekendDay() },
+                  { label: getDateLabel(getNextWeekendDay() + 1), days: getNextWeekendDay() + 1 },
+                ].filter((opt, i, arr) => {
+                  // Remove duplicates (e.g. if today IS Saturday)
+                  return arr.findIndex(o => o.days === opt.days) === i;
+                }).map((option) => (
                   <button
-                    key={option.value}
-                    onClick={() => setPurchaseOffset(option.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      purchaseOffset === option.value
-                        ? 'bg-coral-500 text-white'
-                        : 'bg-white border border-warmgray-200 text-warmgray-600 hover:border-warmgray-300'
-                    }`}
+                    key={option.days}
+                    onClick={() => handleScheduleShopping(option.days)}
+                    className="px-4 py-2 rounded-full text-sm font-medium bg-white border border-warmgray-200 text-warmgray-700 hover:border-navy-500 hover:text-navy-500 transition-all"
                   >
                     {option.label}
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Modal footer */}
-            <div className="p-6 border-t border-warmgray-100 flex items-center justify-between gap-3">
               <button
-                onClick={() => setShowModal(false)}
-                className="text-sm text-warmgray-500 hover:text-warmgray-700 font-medium"
+                onClick={() => setShowDatePicker(false)}
+                className="text-xs text-warmgray-400 hover:text-warmgray-600 mt-3 transition-colors"
               >
                 Cancel
               </button>
-              <Button onClick={handleAddToFridge} size="md">
-                Add {modalChecked.size} item{modalChecked.size !== 1 ? 's' : ''}
-              </Button>
             </div>
-          </div>
+          ) : (
+            <button
+              onClick={() => setShowDatePicker(true)}
+              className="w-full bg-navy-50 hover:bg-navy-100 rounded-2xl p-4 flex items-center justify-center gap-2 transition-colors"
+            >
+              <span className="text-lg">🛒</span>
+              <span className="text-sm font-semibold text-navy-700">
+                I plan to buy these items on...
+              </span>
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </>
   );
 }

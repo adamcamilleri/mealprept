@@ -120,7 +120,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3.5 rounded-2xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
+            className="w-full p-3.5 rounded-2xl border border-warmgray-200 focus:border-navy-400 focus:ring-2 focus:ring-navy-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
             required
           />
           <div className="relative">
@@ -129,7 +129,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3.5 pr-10 rounded-2xl border border-warmgray-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
+              className="w-full p-3.5 pr-10 rounded-2xl border border-warmgray-200 focus:border-navy-400 focus:ring-2 focus:ring-navy-400/20 focus:outline-none text-warmgray-800 text-sm placeholder-warmgray-400 transition-all"
               required
               minLength={6}
             />
@@ -156,7 +156,7 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-warmgray-300 text-coral-500 focus:ring-coral-400"
+                className="w-4 h-4 rounded border-warmgray-300 text-navy-500 focus:ring-navy-400"
               />
               <span className="text-xs text-warmgray-500">Remember me</span>
             </label>

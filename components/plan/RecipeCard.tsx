@@ -20,7 +20,7 @@ export default function RecipeCard({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] overflow-hidden transition-all duration-200 hover:shadow-[0_4px_20px_rgba(50,48,47,0.1)]">
+    <div className="bg-warmgray-50 rounded-2xl border border-warmgray-100 overflow-hidden transition-all duration-200 hover:border-warmgray-200">
       <div className="p-6 sm:p-8">
         <div className="flex justify-between items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -49,27 +49,22 @@ export default function RecipeCard({
             </div>
           </div>
           {onSwap && (
-            canSwap ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onSwap(recipe.id)}
-                loading={swapping}
-                disabled={swapping}
-                className="flex-shrink-0"
-              >
-                Swap for new meal ↻
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled
-                className="flex-shrink-0 opacity-50 cursor-not-allowed"
-              >
-                Swap (Pro)
-              </Button>
-            )
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (canSwap) {
+                  onSwap(recipe.id);
+                } else {
+                  alert('Upgrade to Pro to swap recipes for new meals.');
+                }
+              }}
+              loading={swapping}
+              disabled={swapping}
+              className="flex-shrink-0"
+            >
+              New meal ↻
+            </Button>
           )}
         </div>
 

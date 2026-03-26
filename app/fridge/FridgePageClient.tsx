@@ -348,7 +348,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
                   flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all
                   ${
                     isActive
-                      ? 'bg-coral-500 text-white shadow-sm'
+                      ? 'bg-navy-500 text-white shadow-sm'
                       : 'bg-warmgray-100 text-warmgray-500 hover:bg-warmgray-200 hover:text-warmgray-700'
                   }
                 `}
@@ -385,7 +385,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
                 }}
                 placeholder={atLimit ? 'Upgrade to Pro to add more items' : 'Add an ingredient...'}
                 disabled={atLimit}
-                className="w-full px-4 py-3 rounded-xl border border-warmgray-200 text-warmgray-800 placeholder-warmgray-400 focus:outline-none focus:ring-2 focus:ring-coral-400 focus:border-transparent text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 rounded-xl border border-warmgray-200 text-warmgray-800 placeholder-warmgray-400 focus:outline-none focus:ring-2 focus:ring-navy-400 focus:border-transparent text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {showSuggestions && suggestions.length > 0 && (
                 <div
@@ -424,7 +424,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
               onChange={(e) => setQuantity(e.target.value)}
               placeholder="Qty (optional)"
               disabled={atLimit}
-              className="w-full sm:w-28 px-4 py-3 rounded-xl border border-warmgray-200 text-warmgray-800 placeholder-warmgray-400 focus:outline-none focus:ring-2 focus:ring-coral-400 focus:border-transparent text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-28 px-4 py-3 rounded-xl border border-warmgray-200 text-warmgray-800 placeholder-warmgray-400 focus:outline-none focus:ring-2 focus:ring-navy-400 focus:border-transparent text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -488,7 +488,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
                   <select
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value as FridgeItem['category'])}
-                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-coral-400"
+                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-navy-400"
                   >
                     <option value="produce">🥬 Produce</option>
                     <option value="protein">🥩 Protein</option>
@@ -505,7 +505,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
                     onChange={(e) => setCustomShelfLife(e.target.value)}
                     min="1"
                     max="365"
-                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-coral-400"
+                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-navy-400"
                   />
                 </div>
                 <div className="flex-1">
@@ -513,7 +513,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
                   <select
                     value={customStorage}
                     onChange={(e) => setCustomStorage(e.target.value as StorageLocation)}
-                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-coral-400"
+                    className="w-full px-3 py-2 rounded-lg border border-warmgray-200 text-sm text-warmgray-800 focus:outline-none focus:ring-2 focus:ring-navy-400"
                   >
                     <option value="fridge">🧊 Fridge</option>
                     <option value="pantry">🫙 Pantry</option>

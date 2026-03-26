@@ -54,7 +54,7 @@ export default function PlansPageClient({ plans }: { plans: Plan[] }) {
           >
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold text-warmgray-800 group-hover:text-coral-600 transition-colors truncate">
+                <h2 className="text-base font-semibold text-warmgray-800 group-hover:text-coral-500 transition-colors truncate">
                   {plan.plan_name}
                 </h2>
                 <p className="text-xs text-warmgray-400 mt-1">

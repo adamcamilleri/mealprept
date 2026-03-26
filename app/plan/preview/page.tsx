@@ -145,13 +145,13 @@ export default function PreviewPage() {
 
         {/* Save banner for unauthenticated users */}
         {!isAuthenticated && !saved && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-4">
-            <p className="text-sm text-amber-800">
+          <div className="bg-navy-50 border border-navy-100 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-4">
+            <p className="text-sm text-navy-500">
               This plan disappears when you leave. Sign up free to save it.
             </p>
             <button
               onClick={() => setShowAuth(true)}
-              className="text-sm font-semibold text-coral-500 hover:text-coral-600 transition-colors whitespace-nowrap"
+              className="text-sm font-semibold text-navy-500 hover:text-navy-600 underline underline-offset-2 transition-colors whitespace-nowrap"
             >
               Sign up
             </button>

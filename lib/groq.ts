@@ -44,6 +44,7 @@ CRITICAL RULES:
    - GOOD: "1 bell pepper", "3 cloves garlic", "1 thumb-sized piece of ginger", "1 bunch cilantro", "2 chicken breasts", "1 can coconut milk (400ml)", "1 lime (juiced)", "half an onion (diced)"
    - BAD: "150g bell pepper", "0.25 cups cilantro", "28g garlic"
    - Use grams/ml ONLY for things that genuinely need precision: rice (300g), pasta (250g), flour (200g), liquids like soy sauce (2 tbsp), oil (1 tbsp)
+   - NEVER write 1000g, write 1kg instead. Always use kg for amounts 1000g or above.
    - For proteins, use pieces AND weight: "2 chicken breasts (~500g total)", "1 salmon fillet (~200g)"
    - For spices, use teaspoons/tablespoons: "1 tsp cumin", "2 tbsp soy sauce"
    - The grocery list should read like a real shopping list: "1 bunch cilantro", "1 head garlic", "3 limes", "1 bag spinach", NOT "42g cilantro"

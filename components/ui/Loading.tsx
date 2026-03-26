@@ -31,7 +31,7 @@ export default function Loading() {
       {/* Spinner ring */}
       <div className="relative w-10 h-10">
         <div className="absolute inset-0 rounded-full border-[2px] border-warmgray-100" />
-        <div className="absolute inset-0 rounded-full border-[2px] border-transparent border-t-coral-500 animate-spin-ring" />
+        <div className="absolute inset-0 rounded-full border-[2px] border-transparent border-t-navy-500 animate-spin-ring" />
       </div>
 
       <div
