@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TasteProfile } from '@/lib/types';
 import ChipGrid from './ChipGrid';
@@ -100,6 +100,22 @@ export default function Quiz({ darkMode = false }: QuizProps) {
   const [showUpgradeGate, setShowUpgradeGate] = useState(false);
   const [upgradeMessage, setUpgradeMessage] = useState('');
   const [hardNosText, setHardNosText] = useState('');
+  const [fridgeOnly, setFridgeOnly] = useState(false);
+  const [fridgeItems, setFridgeItems] = useState<string[]>([]);
+  const [hasFridgeItems, setHasFridgeItems] = useState(false);
+
+  // Check if user has fridge items on mount
+  useEffect(() => {
+    fetch('/api/fridge')
+      .then(r => r.ok ? r.json() : [])
+      .then((items: { name: string }[]) => {
+        if (items.length > 0) {
+          setHasFridgeItems(true);
+          setFridgeItems(items.map(i => i.name));
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
     mealType: undefined,
@@ -159,6 +175,7 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       const submitProfile = {
         ...profile,
         hardNos: getFullHardNos(),
+        ...(fridgeOnly ? { fridgeOnly: true, availableIngredients: fridgeItems } : {}),
       };
 
       const res = await fetch('/api/generate-plan', {
@@ -238,6 +255,39 @@ export default function Quiz({ darkMode = false }: QuizProps) {
         onToggle={(v) => updateProfile('mealType', v)}
         multiSelect={false}
       />
+      {hasFridgeItems && (
+        <div className="mt-6 pt-6 border-t border-warmgray-200">
+          <button
+            onClick={() => setFridgeOnly(!fridgeOnly)}
+            className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-200 ${
+              fridgeOnly
+                ? 'border-navy-500 bg-navy-50'
+                : 'border-warmgray-200 bg-white hover:border-warmgray-300'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🧊</span>
+              <div className="text-left">
+                <p className={`text-sm font-semibold ${fridgeOnly ? 'text-navy-700' : 'text-warmgray-700'}`}>
+                  Only use what I have
+                </p>
+                <p className="text-xs text-warmgray-400">
+                  Build recipes from your {fridgeItems.length} fridge & pantry items
+                </p>
+              </div>
+            </div>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+              fridgeOnly ? 'border-navy-500 bg-navy-500' : 'border-warmgray-300'
+            }`}>
+              {fridgeOnly && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+          </button>
+        </div>
+      )}
     </QuizStep>,
 
     // Step 1: Cuisines

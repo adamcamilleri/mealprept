@@ -12,6 +12,7 @@ import {
 } from '@/lib/fridge-data';
 import Button from '@/components/ui/Button';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
+import PantryPresetsModal from '@/components/fridge/PantryPresetsModal';
 
 const FREE_ITEM_LIMIT = 40;
 
@@ -104,6 +105,7 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
   const [customCategory, setCustomCategory] = useState<FridgeItem['category']>('other');
   const [customStorage, setCustomStorage] = useState<StorageLocation>('fridge');
   const [addItemStorage, setAddItemStorage] = useState<StorageLocation | null>(null);
+  const [showPresetsModal, setShowPresetsModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -382,6 +384,35 @@ export default function FridgePageClient({ isPro }: FridgePageClientProps) {
             Track what you have and know when to use it up.
           </p>
         </div>
+
+        {/* Quick stock button */}
+        <button
+          onClick={() => setShowPresetsModal(true)}
+          className="w-full mb-6 bg-white rounded-2xl shadow-[0_2px_12px_rgba(50,48,47,0.06)] p-4 flex items-center gap-3 hover:shadow-[0_2px_16px_rgba(50,48,47,0.1)] transition-all group text-left"
+        >
+          <span className="w-10 h-10 rounded-full bg-coral-50 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <span className="text-lg">&#x1F6D2;</span>
+          </span>
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-semibold text-warmgray-800 block">Quick stock your kitchen</span>
+            <span className="text-xs text-warmgray-400">Add common pantry staples, spices, and fridge essentials in one tap</span>
+          </div>
+          <svg className="w-5 h-5 text-warmgray-300 group-hover:text-warmgray-500 flex-shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Pantry presets modal */}
+        <PantryPresetsModal
+          open={showPresetsModal}
+          onClose={() => setShowPresetsModal(false)}
+          existingItems={items}
+          onItemsAdded={(newItems) => {
+            setItems((prev) => [...newItems, ...prev]);
+          }}
+          isPro={isPro}
+          currentItemCount={items.length}
+        />
 
         {/* Item limit warning */}
         {atLimit && (

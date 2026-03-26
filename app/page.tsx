@@ -50,9 +50,14 @@ const SAMPLE_RECIPES = [
 function HomeContent() {
   const searchParams = useSearchParams();
   const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
 
   useEffect(() => {
     if (searchParams.get('signin') === 'true') {
+      setAuthMode('signin');
+      setShowAuth(true);
+    } else if (searchParams.get('signup') === 'true') {
+      setAuthMode('signup');
       setShowAuth(true);
     }
   }, [searchParams]);
@@ -255,6 +260,7 @@ function HomeContent() {
       {/* Auth modal - triggered by ?signin=true redirect */}
       {showAuth && (
         <AuthModal
+          defaultMode={authMode}
           onClose={() => {
             setShowAuth(false);
             window.history.replaceState({}, '', '/');

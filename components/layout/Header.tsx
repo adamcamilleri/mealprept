@@ -76,12 +76,20 @@ export default function Header() {
                   {(user.email?.[0] ?? '?').toUpperCase()}
                 </Link>
               ) : (
-                <Link
-                  href="/?signin=true"
-                  className="px-5 py-2 rounded-full text-sm font-semibold bg-warmgray-800 text-white hover:bg-warmgray-700 transition-all"
-                >
-                  Sign in
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/?signin=true"
+                    className="px-5 py-2 rounded-full text-sm font-semibold border border-warmgray-300 text-warmgray-700 hover:border-warmgray-400 transition-all"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/?signup=true"
+                    className="px-5 py-2 rounded-full text-sm font-semibold bg-navy-500 text-white hover:bg-navy-600 transition-all"
+                  >
+                    Register
+                  </Link>
+                </div>
               )
             )}
           </div>

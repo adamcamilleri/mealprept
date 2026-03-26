@@ -152,6 +152,12 @@ This person's taste profile:
 
 Create exactly ${profile.prepDays} recipes. Every recipe should sound genuinely appetizing - like something they'd be excited to eat, not something they're forcing themselves through. Share overlapping ingredients across recipes to keep the grocery list short.`;
 
+  // Fridge-only mode: constrain recipes to available ingredients
+  const p = profile as TasteProfile & { fridgeOnly?: boolean; availableIngredients?: string[] };
+  if (p.fridgeOnly && p.availableIngredients && p.availableIngredients.length > 0) {
+    prompt += `\n\nCRITICAL CONSTRAINT: The user wants to cook ONLY with ingredients they already have. Here is their complete inventory:\n${p.availableIngredients.join(', ')}\n\nYou MUST only use ingredients from this list. Do NOT add any ingredients not on this list. The grocery list should be empty or contain only items they might need to restock. Get creative with what they have.`;
+  }
+
   return prompt;
 }
 
