@@ -29,17 +29,28 @@ const MEAL_TYPES = [
   { label: 'Mix it up', emoji: '🎲', value: 'mix' },
 ];
 
-const PROTEINS = [
-  { label: 'Chicken thighs', emoji: '🍗', value: 'Chicken thighs' },
-  { label: 'Chicken breast', emoji: '🐔', value: 'Chicken breast' },
-  { label: 'Ground beef', emoji: '🥩', value: 'Ground beef' },
-  { label: 'Steak', emoji: '🥩', value: 'Steak' },
-  { label: 'Salmon', emoji: '🐟', value: 'Salmon' },
-  { label: 'Shrimp', emoji: '🦐', value: 'Shrimp' },
-  { label: 'Tofu', emoji: '🫘', value: 'Tofu' },
-  { label: 'Eggs', emoji: '🥚', value: 'Eggs' },
-  { label: 'Pork', emoji: '🐖', value: 'Pork' },
-  { label: 'Turkey', emoji: '🦃', value: 'Turkey' },
+const DIET_TYPES = [
+  { label: 'No restrictions', emoji: '🍽️', value: 'none' },
+  { label: 'Vegetarian', emoji: '🥬', value: 'vegetarian' },
+  { label: 'Vegan', emoji: '🌱', value: 'vegan' },
+  { label: 'Pescatarian', emoji: '🐟', value: 'pescatarian' },
+];
+
+const ALL_PROTEINS = [
+  { label: 'Chicken thighs', emoji: '🍗', value: 'Chicken thighs', diet: ['none'] },
+  { label: 'Chicken breast', emoji: '🐔', value: 'Chicken breast', diet: ['none'] },
+  { label: 'Ground beef', emoji: '🥩', value: 'Ground beef', diet: ['none'] },
+  { label: 'Steak', emoji: '🥩', value: 'Steak', diet: ['none'] },
+  { label: 'Salmon', emoji: '🐟', value: 'Salmon', diet: ['none', 'pescatarian'] },
+  { label: 'Shrimp', emoji: '🦐', value: 'Shrimp', diet: ['none', 'pescatarian'] },
+  { label: 'Tofu', emoji: '🫘', value: 'Tofu', diet: ['none', 'vegetarian', 'vegan', 'pescatarian'] },
+  { label: 'Tempeh', emoji: '🫘', value: 'Tempeh', diet: ['none', 'vegetarian', 'vegan', 'pescatarian'] },
+  { label: 'Chickpeas', emoji: '🫘', value: 'Chickpeas', diet: ['none', 'vegetarian', 'vegan', 'pescatarian'] },
+  { label: 'Lentils', emoji: '🫘', value: 'Lentils', diet: ['none', 'vegetarian', 'vegan', 'pescatarian'] },
+  { label: 'Black beans', emoji: '🫘', value: 'Black beans', diet: ['none', 'vegetarian', 'vegan', 'pescatarian'] },
+  { label: 'Eggs', emoji: '🥚', value: 'Eggs', diet: ['none', 'vegetarian', 'pescatarian'] },
+  { label: 'Pork', emoji: '🐖', value: 'Pork', diet: ['none'] },
+  { label: 'Turkey', emoji: '🦃', value: 'Turkey', diet: ['none'] },
 ];
 
 const EFFORT_LEVELS = [
@@ -72,7 +83,7 @@ const SERVINGS = [
   { label: '4', value: '4' },
 ];
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 const EFFORT_LABELS: Record<string, string> = {
   quick: '15 min max',
@@ -116,6 +127,7 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       })
       .catch(() => {});
   }, []);
+  const [dietType, setDietType] = useState<string>('');
   const [profile, setProfile] = useState<TasteProfile>({
     cuisines: [],
     mealType: undefined,
@@ -146,15 +158,20 @@ export default function Quiz({ darkMode = false }: QuizProps) {
     });
   };
 
+  const filteredProteins = ALL_PROTEINS.filter(
+    (p) => dietType === '' || dietType === 'none' || p.diet.includes(dietType)
+  );
+
   const canProceed = () => {
     switch (step) {
       case 0: return !!profile.mealType;
-      case 1: return profile.cuisines.length > 0;
-      case 2: return profile.proteins.length > 0;
-      case 3: return !!profile.effortLevel;
-      case 4: return true; // allergies + hard nos are optional
-      case 5: return profile.prepDays > 0;
-      case 6: return profile.servings > 0;
+      case 1: return !!dietType;
+      case 2: return profile.cuisines.length > 0;
+      case 3: return profile.proteins.length > 0;
+      case 4: return !!profile.effortLevel;
+      case 5: return true; // allergies + hard nos are optional
+      case 6: return profile.prepDays > 0;
+      case 7: return profile.servings > 0;
       default: return false;
     }
   };
@@ -175,6 +192,7 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       const submitProfile = {
         ...profile,
         hardNos: getFullHardNos(),
+        dietType: dietType !== 'none' ? dietType : undefined,
         ...(fridgeOnly ? { fridgeOnly: true, availableIngredients: fridgeItems } : {}),
       };
 
@@ -290,8 +308,30 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       )}
     </QuizStep>,
 
-    // Step 1: Cuisines
-    <QuizStep key={1} title="What cuisines do you love?" subtitle="Pick at least 1">
+    // Step 1: Diet type
+    <QuizStep key={1} title="Any dietary preferences?" subtitle="This filters your protein options">
+      <ChipGrid
+        options={DIET_TYPES}
+        selected={dietType ? [dietType] : []}
+        onToggle={(v) => {
+          setDietType(v);
+          // Clear protein selections that don't match new diet
+          if (v !== 'none' && v !== '') {
+            setProfile(prev => ({
+              ...prev,
+              proteins: prev.proteins.filter(p => {
+                const protein = ALL_PROTEINS.find(ap => ap.value === p);
+                return protein && protein.diet.includes(v);
+              })
+            }));
+          }
+        }}
+        multiSelect={false}
+      />
+    </QuizStep>,
+
+    // Step 2: Cuisines
+    <QuizStep key={2} title="What cuisines do you love?" subtitle="Pick at least 1">
       <ChipGrid
         options={CUISINES}
         selected={profile.cuisines}
@@ -299,17 +339,17 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       />
     </QuizStep>,
 
-    // Step 2: Proteins
-    <QuizStep key={2} title="Pick your go-to proteins" subtitle="Pick at least 1">
+    // Step 3: Proteins (filtered by diet)
+    <QuizStep key={3} title="Pick your go-to proteins" subtitle="Pick at least 1">
       <ChipGrid
-        options={PROTEINS}
+        options={filteredProteins}
         selected={profile.proteins}
         onToggle={(v) => toggleArrayItem('proteins', v)}
       />
     </QuizStep>,
 
-    // Step 3: Effort
-    <QuizStep key={3} title="How much cooking effort this week?">
+    // Step 4: Effort
+    <QuizStep key={4} title="How much cooking effort this week?">
       <ChipGrid
         options={EFFORT_LEVELS}
         selected={[profile.effortLevel]}
@@ -318,8 +358,8 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       />
     </QuizStep>,
 
-    // Step 4: Allergies + Hard nos (combined)
-    <QuizStep key={4} title="Allergies or ingredients to avoid?" subtitle="Optional - skip if you eat everything">
+    // Step 5: Allergies + Hard nos (combined)
+    <QuizStep key={5} title="Allergies or ingredients to avoid?" subtitle="Optional - skip if you eat everything">
       <div className="space-y-6">
         <div>
           <p className={`text-sm font-medium ${mutedColor} mb-3`}>Common allergies</p>
@@ -352,8 +392,8 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       </div>
     </QuizStep>,
 
-    // Step 5: Prep days
-    <QuizStep key={5} title="How many days of meal prep?">
+    // Step 6: Prep days
+    <QuizStep key={6} title="How many days of meal prep?">
       <ChipGrid
         options={PREP_DAYS}
         selected={[String(profile.prepDays)]}
@@ -362,8 +402,8 @@ export default function Quiz({ darkMode = false }: QuizProps) {
       />
     </QuizStep>,
 
-    // Step 6: Servings
-    <QuizStep key={6} title="Servings per meal?">
+    // Step 7: Servings
+    <QuizStep key={7} title="Servings per meal?">
       <ChipGrid
         options={SERVINGS}
         selected={[String(profile.servings)]}
@@ -373,8 +413,16 @@ export default function Quiz({ darkMode = false }: QuizProps) {
     </QuizStep>,
   ];
 
+  const DIET_LABELS: Record<string, string> = {
+    none: 'No restrictions',
+    vegetarian: 'Vegetarian',
+    vegan: 'Vegan',
+    pescatarian: 'Pescatarian',
+  };
+
   const sidebarItems = [
     { label: 'Meal', value: profile.mealType ? MEAL_TYPE_LABELS[profile.mealType] || profile.mealType : null },
+    { label: 'Diet', value: dietType && dietType !== 'none' ? DIET_LABELS[dietType] : null },
     { label: 'Cuisines', value: profile.cuisines.length > 0 ? profile.cuisines.join(', ') : null },
     { label: 'Proteins', value: profile.proteins.length > 0 ? profile.proteins.join(', ') : null },
     { label: 'Effort', value: profile.effortLevel ? EFFORT_LABELS[profile.effortLevel] || profile.effortLevel : null },
